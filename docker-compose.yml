@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres
+    volumes:
+      - .:/postgres
+    ports:
+      - ${LOCAL_POSTGRES_PORT_RANGE}
+  web:
+    restart: always
+    build: ./
+    image: web
+    environment:
+      - DJANGO_SECRET=local
+      - LOCAL_POSTGRES_HOST=postgres
+    command: python3 manage.py runserver 0.0.0.0:8080
+    volumes:
+      - .:/code
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres

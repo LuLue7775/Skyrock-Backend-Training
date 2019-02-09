@@ -1,0 +1,12 @@
+project_name: skyrock_cluster
+docker_image: gcr.io/skyrock/skyrock_cluster
+venv_python: ~/anaconda/envs/skyrock/bin/python3.5
+helm_chart: skyrock/skyrock_cluster
+helm_chart_version: 0.1.32
+configs:
+    production:
+      project: skyrock_cluster
+      cluster: production
+      namespace: skyrock_cluster
+      helm_values_path: ./etc/helm/production/values.yaml
+      env_dir: ./etc/helm/production/

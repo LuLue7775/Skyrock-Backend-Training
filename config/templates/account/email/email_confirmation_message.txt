@@ -1,0 +1,6 @@
+Hi{% if user.first_name %} {{ user.first_name }}{% endif %},
+
+Please follow the link to verify your email address: {{ activate_url|safe }}
+
+Thanks,
+skyrock Team
