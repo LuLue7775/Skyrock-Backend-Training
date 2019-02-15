@@ -72,10 +72,6 @@ class AbstractUser(AbstractBaseUser, PermissionsMixin):
         default=False,
         help_text=_('Designates whether the user can log into this admin site.'),
     )
-    role = EnumField(
-        Role,
-        max_length=50,
-        default=Role.PARENT)
     is_active = models.BooleanField(
         _('active'),
         default=True,
@@ -114,10 +110,26 @@ class User(AbstractUser, DateModel):
 
 
 class Student(DateModel):
-    parent = models.ForeignKey('skyrock.User')
+    identifier = models.UUIDField(unique=True, db_index=True,
+        default=uuid.uuid4)
+    name = models.CharField(max_length=50, db_index=True, blank=True)
+    parent = models.ForeignKey('skyrock.Parent')
     age = models.IntegerField()
     email = models.EmailField(_('email address'), null=True, unique=True)
     phone = models.IntegerField()
+    hours = models.IntegerField()
+    current_teacher = models.ForeignKey('skyrock.User', blank=True)
+    pathways = models.ManyToManyField('skyrock.StudentPathway', blank=True)
+
+
+class Parent(DateModel):
+    identifier = models.UUIDField(unique=True, db_index=True,
+        default=uuid.uuid4)
+    name = models.CharField(max_length=50, db_index=True, blank=True)
+    email = models.EmailField(_('email address'), null=True, unique=True)
+    phone = models.IntegerField()
+    cost = models.IntegerField()
+    payment = models.CharField(max_length=200, blank=True)
     
 
 class StudentColor(DateModel):
@@ -130,13 +142,11 @@ class StudentColor(DateModel):
     progress = models.IntegerField()
 
 
-class StudentCourse(DateModel):
+class StudentPathway(DateModel):
     identifier = models.UUIDField(unique=True, db_index=True,
         default=uuid.uuid4)
-    course = models.ForeignKey('skyrock.Pathway')
-    description = models.CharField(max_length=200, blank=True)
-    user = models.ForeignKey('skyrock.Student')
-    progress = models.IntegerField()
+    pathway = models.ForeignKey('skyrock.Pathway')
+    complete = models.BooleanField(default=False)
 
 
 class StudentProject(DateModel):
@@ -156,10 +166,10 @@ class StudentTask(DateModel):
     complete = models.BooleanField(default=False)
 
 
-class StudentSkill(DateModel):
+class StudentChallenge(DateModel):
     identifier = models.UUIDField(unique=True, db_index=True,
         default=uuid.uuid4)
-    skill = models.ForeignKey('skyrock.Skill')
+    skill = models.ForeignKey('skyrock.Challenge')
     user = models.ForeignKey('skyrock.Student')
     complete = models.BooleanField(default=False)
     level = models.IntegerField(default=0)
@@ -195,6 +205,7 @@ class Project(DateModel):
     name = models.CharField(max_length=50, db_index=True, blank=True)
     description = models.CharField(max_length=200, blank=True)
     tasks = models.ManyToManyField('skyrock.Task')
+    challenges = models.ManyToManyField('skyrock.Challenge')
 
 
 class Task(DateModel):
@@ -202,14 +213,19 @@ class Task(DateModel):
         default=uuid.uuid4)
     name = models.CharField(max_length=50, db_index=True, blank=True)
     description = models.CharField(max_length=200, blank=True)
-    skills = models.ManyToManyField('skyrock.Skill')
+    tags = models.ManyToManyField('skyrock.Tag', blank=True, default=None)
 
 
-class Skill(DateModel):
+class Challenge(DateModel):
     identifier = models.UUIDField(unique=True, db_index=True,
         default=uuid.uuid4)
     name = models.CharField(max_length=50, db_index=True, blank=True)
     description = models.CharField(max_length=200, blank=True)
+    tags = models.ManyToManyField('skyrock.Tag', blank=True)
+
+
+class Tag(DateModel):
+    name = models.CharField(max_length=50, db_index=True, unique=True)
 
 
 class Badge(DateModel):
@@ -217,4 +233,5 @@ class Badge(DateModel):
         default=uuid.uuid4)
     name = models.CharField(max_length=50, db_index=True, blank=True)
     description = models.CharField(max_length=200, blank=True)
+    tag = models.ForeignKey('skyrock.Tag')
 

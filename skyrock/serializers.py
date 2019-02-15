@@ -43,10 +43,16 @@ class DateSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(DateSerializer):
+    role = serializers.ChoiceField(
+        source='role.value',
+        choices=Role.choices())
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'email', 'created', 'updated',)
+        fields = ('first_name', 'last_name', 'email', 'created', 'updated', 'role')
         read_only_field = ('created', 'updated',)
+
+    def validate(self, validated_data):
+        return validated_data
 
 
 class TokenSerializer(serializers.Serializer):
@@ -64,6 +70,9 @@ class RegisterSerializer(serializers.Serializer):
         max_length=128, style={'input_type': 'password'})
     password2 = serializers.CharField(required=True, write_only=True,
         max_length=128, style={'input_type': 'password'})
+    # role = serializers.ChoiceField(
+    #     required=False,
+    #     choices=Role.choices())
 
     def validate_email(self, email):
         return get_adapter().clean_email(email)
@@ -87,6 +96,12 @@ class RegisterSerializer(serializers.Serializer):
                 {"email": [_("A user is already registered "
                              "with this email address.")]})
 
+        # if data.get('role'):
+        #     role = data['role']
+        #     print(role)
+        #     data['role'] = Role(role)
+        #     print(data['role'])
+
         return data
 
     def save(self, request):
@@ -95,6 +110,8 @@ class RegisterSerializer(serializers.Serializer):
         self.cleaned_data = self.validated_data
         adapter.save_user(request, user, self)
         setup_user_email(request, user, [])
+        # print(user)
+        # user.update(role = Role(request.data['role']))
         return user
 
 
@@ -197,10 +214,10 @@ class ColorSerializer(serializers.ModelSerializer):
         self.instance.delete()
 
 
-class SkillSerializer(serializers.ModelSerializer):
+class ChallengeSerializer(serializers.ModelSerializer):
     identifier = serializers.UUIDField(read_only=True)
     class Meta:
-        model = Skill
+        model = Challenge
         fields = (
             'identifier',
             'name',
@@ -213,14 +230,12 @@ class SkillSerializer(serializers.ModelSerializer):
 
 class TaskSerializer(serializers.ModelSerializer):
     identifier = serializers.UUIDField(read_only=True)
-    skills = SkillSerializer(many=True)
     class Meta:
         model = Task
         fields = (
             'identifier',
             'name',
             'description',
-            'skills'
         )
 
     def delete(self):
@@ -230,13 +245,16 @@ class TaskSerializer(serializers.ModelSerializer):
 class ProjectSerializer(serializers.ModelSerializer):
     identifier = serializers.UUIDField(read_only=True)
     tasks = TaskSerializer(many=True)
+    challenges = ChallengeSerializer(many=True)
+
     class Meta:
         model = Project
         fields = (
             'identifier',
             'name',
             'description',
-            'tasks'
+            'tasks',
+            'challenges'
         )
     def delete(self):
         self.instance.delete()
@@ -273,7 +291,27 @@ class BadgeSerializer(serializers.ModelSerializer):
 
     def delete(self):
         self.instance.delete()
+
+
+class TagSerializer(serializers.ModelSerializer):
+    identifier = serializers.UUIDField(read_only=True)
+    class Meta:
+        model = Tag
+        fields = (
+            'name'
+        )
+
+    def delete(self):
+        self.instance.delete()
         
+
+class CreateTagSerializer(TagSerializer):
+    name = serializers.CharField(required=True)
+
+    class Meta:
+        model = ColorSerializer.Meta.model
+        fields = ColorSerializer.Meta.fields
+
 
 class CreateColorSerializer(ColorSerializer):
     name = serializers.CharField(required=True)
@@ -343,6 +381,7 @@ class CreateProjectSerializer(ProjectSerializer):
     name = serializers.CharField(required=True)
     description = serializers.CharField(required=True)
     tasks = serializers.ListField(required=True)
+    challenges = serializers.ListField(required=False)
 
     class Meta:
         model = ProjectSerializer.Meta.model
@@ -351,6 +390,7 @@ class CreateProjectSerializer(ProjectSerializer):
             'name',
             'description',
             'tasks',
+            'challenges'
         )
         read_only_fields = (
             'identifier',
@@ -361,6 +401,7 @@ class CreateProjectSerializer(ProjectSerializer):
 
     def create(self, validated_data):
         tasks = validated_data.get('tasks')
+        challenges = validated_data.get('challenges')
 
         project = Project.objects.create(
                 name=validated_data['name'],
@@ -375,13 +416,21 @@ class CreateProjectSerializer(ProjectSerializer):
                     {"tasks": ["The task does not exist."]})
             project.tasks.add(task)
 
+        for items in challenges:
+            try:
+                challenge = Challenge.objects.get(identifier=items)
+            except Challenge.DoesNotExist:
+                raise serializers.ValidationError(
+                    {"challenge": ["The challenge does not exist."]})
+            project.challenges.add(challenge)
+
         return project
 
 
 class CreateTaskSerializer(TaskSerializer):
     name = serializers.CharField(required=True)
     description = serializers.CharField(required=True)
-    skills = serializers.ListField(required=True)
+    tags = serializers.ListField(required=True)
 
     class Meta:
         model = TaskSerializer.Meta.model
@@ -389,7 +438,7 @@ class CreateTaskSerializer(TaskSerializer):
             'identifier',
             'name',
             'description',
-            'skills',
+            'tags',
         )
         read_only_fields = (
             'identifier',
@@ -399,41 +448,72 @@ class CreateTaskSerializer(TaskSerializer):
         return validated_data
 
     def create(self, validated_data):
-        skills = validated_data.get('skills')
+        tags = validated_data.get('tags')
 
         task = Task.objects.create(
                 name=validated_data['name'],
                 description=validated_data['description'],
                 )
 
-        for item in skills:
-            try:
-                skill = Skill.objects.get(identifier=item)
-                print(skill)
-            except Skill.DoesNotExist:
-                raise serializers.ValidationError(
-                    {"skill": ["The skill does not exist."]})
-            task.skills.add(skill)
+        for item in tags:
+            
+            tag = Tag.objects.get_or_create(name=item)
+            task.tags.add(tag)
 
         return task
 
 
-class CreateSkillSerializer(SkillSerializer):
-    name = serializers.CharField(required=False)
-    description = serializers.CharField(required=False)
+class CreateChallengeSerializer(ChallengeSerializer):
+    name = serializers.CharField(required=True)
+    description = serializers.CharField(required=True)
+    tags = serializers.ListField(required=True)
 
     class Meta:
-        model = SkillSerializer.Meta.model
-        fields = SkillSerializer.Meta.fields
+        model = ChallengeSerializer.Meta.model
+        fields = (
+            'identifier',
+            'name',
+            'description',
+            'tags',
+        )
         read_only_fields = (
             'identifier',
         )
 
+    def validate(self, validated_data):
+        return validated_data
+
+    def create(self, validated_data):
+        tags = validated_data.get('tags')
+
+        challenge = Challenge.objects.create(
+                name=validated_data['name'],
+                description=validated_data['description'],
+                )
+
+        for item in tags:
+            
+            tag = Tag.objects.get_or_create(name=item)
+            task.tags.add(tag)
+
+        return challenge
+
+
+# class CreateTaskSerializer(TaskSerializer):
+#     name = serializers.CharField(required=False)
+#     description = serializers.CharField(required=False)
+
+#     class Meta:
+#         model = TaskSerializer.Meta.model
+#         fields = TaskSerializer.Meta.fields
+#         read_only_fields = (
+#             'identifier',
+#         )
 
 class CreateBadgeSerializer(BadgeSerializer):
     name = serializers.CharField(required=False)
     description = serializers.CharField(required=False)
-
+    tag = serializers.CharField(required=False)
     class Meta:
         model = BadgeSerializer.Meta.model
         fields = BadgeSerializer.Meta.fields
@@ -442,6 +522,149 @@ class CreateBadgeSerializer(BadgeSerializer):
         )
 
     def validate(self, validated_data):
+
+        try:
+            tag = Tag.objects.get(
+                name=validated_data('tag'),
+            )
+            validated_data['tag'] = tag
+        except Tag.DoesNotExist:
+            raise exceptions.NotFound()
+
+        return validated_data
+
+
+class StudentPathwaySerializer(serializers.ModelSerializer):
+    identifier = serializers.UUIDField(read_only=True)
+    pathway = PathwaySerializer()
+    complete = serializers.BooleanField()
+
+    class Meta:
+        model = Pathway
+        fields = (
+            'identifier',
+            'pathway',
+            'complete'
+        )
+
+    def delete(self):
+        self.instance.delete()
+
+class ParentSerializer(serializers.ModelSerializer):
+    identifier = serializers.UUIDField(read_only=True)
+    email = serializers.CharField()
+    phone = serializers.IntegerField()
+    payment = serializers.CharField()
+    cost = serializers.IntegerField()
+    name = serializers.CharField(required=False)
+
+    class Meta:
+        model = Student
+        fields = (
+            'identifier',
+            'name',
+            'email',
+            'phone',
+            'payment',
+            'cost',
+        )
+
+    def delete(self):
+        self.instance.delete()
+
+class StudentSerializer(serializers.ModelSerializer):
+    identifier = serializers.UUIDField(read_only=True)
+    pathways = StudentPathwaySerializer(many=True)
+    parent = ParentSerializer()
+    age = serializers.IntegerField()
+    email = serializers.CharField()
+    phone = serializers.IntegerField()
+    current_teacher =  UserSerializer()
+
+    class Meta:
+        model = Student
+        fields = (
+            'identifier',
+            'name',
+            'pathways',
+            'parent',
+            'age',
+            'email',
+            'phone',
+            'hours',
+            'current_teacher'
+
+        )
+
+    def delete(self):
+        self.instance.delete()
+
+
+class CreateStudentSerializer(PathwaySerializer):
+    name = serializers.CharField(required=True)
+    pathways = serializers.ListField()
+    parent = serializers.CharField(required=True)
+    age = serializers.IntegerField(required=True)
+    hours = serializers.IntegerField()
+    email = serializers.CharField()
+    phone = serializers.IntegerField()
+    parent_email = serializers.CharField()
+    parent_phone = serializers.IntegerField()
+    parent_cost = serializers.IntegerField()
+    parent_payment = serializers.CharField()
+    parent_name = serializers.CharField()
+    current_teacher = serializers.CharField()
+
+    class Meta:
+        model = PathwaySerializer.Meta.model
+        fields = (
+            'identifier',
+            'name',
+            'pathways',
+            'parent',
+            'age',
+            'email',
+            'phone',
+            'hours',
+            'current_teacher'
+        )
+        read_only_fields = (
+            'identifier',
+        )
+
+    def validate(self, validated_data):
         validated_data['user'] = self.context['request'].user
         return validated_data
+
+    def create(self, validated_data):
+        colors = validated_data.get('colors')
+
+        parent = Parent.objects.create(
+                name=validated_data['name'],
+                parent_email=validated_data.get('parent_email'),
+                parent_phone=validated_data.get('parent_phone'),
+                parent_cost=validated_data.get('parent_cost'),
+                parent_payment=validated_data.get('parent_payment'),
+
+                )
+
+        student = Student.objects.create(
+                name=validated_data['name'],
+                description=validated_data['description'],
+                )
+
+        studentpathway = StudentPathway.objects.create(
+                name=validated_data['name'],
+                description=validated_data['description'],
+                )
+
+        for item in projects:    
+            try:
+                project = Project.objects.get(identifier=item)
+            except Project.DoesNotExist:
+                raise serializers.ValidationError(
+                    {"project": ["The project does not exist."]})
+            pathway.projects.add(project)
+
+        return pathway
 

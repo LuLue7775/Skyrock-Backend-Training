@@ -7,4 +7,6 @@ class Role(Enum):
     STUDENT = 'student'
     TEACHER = 'teacher'
     PARENT = 'parent'
+    ADMIN = 'admin'
+    DEVELOPER = 'developer'
 

@@ -33,8 +33,20 @@ urlpatterns = (
     url(r'^staff/project/(?P<id>([a-zA-Z0-9\_\-]+))/$', views.AdminProjectView.as_view(), name='user-node-view'),
 
     url(r'^staff/task/$', views.AdminTaskCreateView.as_view(), name='user-node-view'),
-    url(r'^staff/skill/$', views.AdminSkillCreateView.as_view(), name='user-node-view'),
+    url(r'^staff/task/(?P<id>([a-zA-Z0-9\_\-]+))/$', views.AdminTaskView.as_view(), name='user-node-view'),
+
+    url(r'^staff/challenge/$', views.AdminChallengeCreateView.as_view(), name='user-node-view'),
+    url(r'^staff/challenge/(?P<id>([a-zA-Z0-9\_\-]+))/$', views.AdminChallengeView.as_view(), name='user-node-view'),
+
+    # url(r'^staff/tag/$', views.AdminTagCreateView.as_view(), name='user-node-view'),
+    # url(r'^staff/tag/(?P<id>([a-zA-Z0-9\_\-]+))/$', views.AdminTagView.as_view(), name='user-node-view'),
+
     url(r'^staff/badge/$', views.AdminBadgeCreateView.as_view(), name='user-node-view'),
+    url(r'^staff/badge/(?P<id>([a-zA-Z0-9\_\-]+))/$', views.AdminBadgeView.as_view(), name='user-node-view'),
+
+    url(r'^staff/student/$', views.AdminStudentCreateView.as_view(), name='user-node-view'),
+    url(r'^staff/student/(?P<id>([a-zA-Z0-9\_\-]+))/$', views.AdminStudentView.as_view(), name='user-node-view'),
+
 
     
 )
