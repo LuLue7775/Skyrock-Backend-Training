@@ -43,12 +43,10 @@ class DateSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(DateSerializer):
-    role = serializers.ChoiceField(
-        source='role.value',
-        choices=Role.choices())
+    
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'email', 'created', 'updated', 'role')
+        fields = ('first_name', 'last_name', 'email', 'created', 'updated')
         read_only_field = ('created', 'updated',)
 
     def validate(self, validated_data):
@@ -96,12 +94,6 @@ class RegisterSerializer(serializers.Serializer):
                 {"email": [_("A user is already registered "
                              "with this email address.")]})
 
-        # if data.get('role'):
-        #     role = data['role']
-        #     print(role)
-        #     data['role'] = Role(role)
-        #     print(data['role'])
-
         return data
 
     def save(self, request):
@@ -110,8 +102,6 @@ class RegisterSerializer(serializers.Serializer):
         self.cleaned_data = self.validated_data
         adapter.save_user(request, user, self)
         setup_user_email(request, user, [])
-        # print(user)
-        # user.update(role = Role(request.data['role']))
         return user
 
 
@@ -262,8 +252,8 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 class PathwaySerializer(serializers.ModelSerializer):
     identifier = serializers.UUIDField(read_only=True)
-    colors = ColorSerializer(many=True)
-    projects = ProjectSerializer(many=True)
+    # colors = ColorSerializer(many=True)
+    # projects = ProjectSerializer(many=True)
 
     class Meta:
         model = Pathway
@@ -271,8 +261,8 @@ class PathwaySerializer(serializers.ModelSerializer):
             'identifier',
             'name',
             'description',
-            'colors',
-            'projects'
+            # 'colors',
+            # 'projects'
         )
 
     def delete(self):
@@ -328,8 +318,8 @@ class CreateColorSerializer(ColorSerializer):
 class CreatePathwaySerializer(PathwaySerializer):
     name = serializers.CharField(required=True)
     description = serializers.CharField(required=True)
-    colors = serializers.ListField(required=True)
-    projects = serializers.ListField(required=True)
+    # colors = serializers.ListField(required=True)
+    # projects = serializers.ListField(required=True)
 
     class Meta:
         model = PathwaySerializer.Meta.model
@@ -337,8 +327,8 @@ class CreatePathwaySerializer(PathwaySerializer):
             'identifier',
             'name',
             'description',
-            'colors',
-            'projects',
+            # 'colors',
+            # 'projects',
         )
         read_only_fields = (
             'identifier',
@@ -559,7 +549,7 @@ class ParentSerializer(serializers.ModelSerializer):
     name = serializers.CharField(required=False)
 
     class Meta:
-        model = Student
+        model = Parent
         fields = (
             'identifier',
             'name',
@@ -573,13 +563,12 @@ class ParentSerializer(serializers.ModelSerializer):
         self.instance.delete()
 
 class StudentSerializer(serializers.ModelSerializer):
-    identifier = serializers.UUIDField(read_only=True)
-    pathways = StudentPathwaySerializer(many=True)
+    pathways = PathwaySerializer(many=True)
     parent = ParentSerializer()
     age = serializers.IntegerField()
     email = serializers.CharField()
-    phone = serializers.IntegerField()
-    current_teacher =  UserSerializer()
+    phone = serializers.CharField()
+    current_teacher =  serializers.CharField()
 
     class Meta:
         model = Student
@@ -592,31 +581,51 @@ class StudentSerializer(serializers.ModelSerializer):
             'email',
             'phone',
             'hours',
-            'current_teacher'
+            'current_teacher',
+            'current_pathway'
+        )
 
+    def delete(self):
+        self.instance.delete()
+
+class ShortStudentSerializer(serializers.ModelSerializer):
+   
+    class Meta:
+        model = Student
+        fields = (
+            'identifier',
+            'name',
+            'age',
+            'email',
+            'phone',
+            'hours',
+            'current_teacher',
+            'current_pathway'
         )
 
     def delete(self):
         self.instance.delete()
 
 
-class CreateStudentSerializer(PathwaySerializer):
+
+class CreateStudentSerializer(StudentSerializer):
     name = serializers.CharField(required=True)
     pathways = serializers.ListField()
     parent = serializers.CharField(required=True)
     age = serializers.IntegerField(required=True)
     hours = serializers.IntegerField()
     email = serializers.CharField()
-    phone = serializers.IntegerField()
+    phone = serializers.CharField()
     parent_email = serializers.CharField()
-    parent_phone = serializers.IntegerField()
+    parent_phone = serializers.CharField()
     parent_cost = serializers.IntegerField()
     parent_payment = serializers.CharField()
     parent_name = serializers.CharField()
     current_teacher = serializers.CharField()
+    current_pathway = serializers.CharField()
 
     class Meta:
-        model = PathwaySerializer.Meta.model
+        model = StudentSerializer.Meta.model
         fields = (
             'identifier',
             'name',
@@ -626,7 +635,13 @@ class CreateStudentSerializer(PathwaySerializer):
             'email',
             'phone',
             'hours',
-            'current_teacher'
+            'current_teacher',
+            'current_pathway',
+            'parent_name',
+            'parent_payment',
+            'parent_cost',
+            'parent_phone',
+            'parent_email'
         )
         read_only_fields = (
             'identifier',
@@ -637,34 +652,103 @@ class CreateStudentSerializer(PathwaySerializer):
         return validated_data
 
     def create(self, validated_data):
-        colors = validated_data.get('colors')
+        pathway = validated_data.get('pathways')
 
         parent = Parent.objects.create(
                 name=validated_data['name'],
-                parent_email=validated_data.get('parent_email'),
-                parent_phone=validated_data.get('parent_phone'),
-                parent_cost=validated_data.get('parent_cost'),
-                parent_payment=validated_data.get('parent_payment'),
+                email=validated_data.get('parent_email'),
+                phone=validated_data.get('parent_phone'),
+                cost=validated_data.get('parent_cost'),
+                payment=validated_data.get('parent_payment'),
+                
 
                 )
 
         student = Student.objects.create(
                 name=validated_data['name'],
-                description=validated_data['description'],
+                age=validated_data.get('age'),
+                email=validated_data.get('email'),
+                phone=validated_data.get('phone'),
+                hours=validated_data.get('hours'),
+                parent=parent,
+                current_teacher=validated_data.get('current_teacher'),
+                current_pathway=validated_data.get('current_pathway'),
                 )
 
-        studentpathway = StudentPathway.objects.create(
-                name=validated_data['name'],
-                description=validated_data['description'],
-                )
-
-        for item in projects:    
+        for item in pathway:   
             try:
-                project = Project.objects.get(identifier=item)
-            except Project.DoesNotExist:
+                project = Pathway.objects.get(identifier=item)
+            except Pathway.DoesNotExist:
                 raise serializers.ValidationError(
-                    {"project": ["The project does not exist."]})
-            pathway.projects.add(project)
+                    {"project": ["The pathway does not exist."]})
+            student.pathways.add(project)
 
-        return pathway
+        return student
 
+
+class StudentAttendanceSerializer(serializers.ModelSerializer):
+    student = ShortStudentSerializer()
+    status = serializers.ChoiceField(
+                required=True,
+                source='status.value',
+
+                choices=Attendance_status.choices())
+
+    class Meta:
+        model = Attendance
+        fields = (
+            'identifier',
+             'status',
+            'student',
+            'date',
+            
+        )
+
+    def delete(self):
+        self.instance.delete()
+
+
+class CreateStudentAttendanceSerializer(StudentAttendanceSerializer):
+    date = serializers.CharField()
+    student = serializers.CharField()
+    status = serializers.ChoiceField(
+                required=True,
+                source='status.value',
+
+                choices=Attendance_status.choices())
+    
+    class Meta:
+        model = Attendance
+        fields = (
+            'identifier',
+            'student',
+            'status',
+            'date',
+        )
+
+    def validate(self, validated_data):
+
+        try:
+            student = Student.objects.get(identifier = validated_data.get('student'))
+            validated_data["student"] = student
+        except Student.DoesNotExist:
+                raise serializers.ValidationError(
+                    {"attendance": ["The student does not exist."]})
+
+        print(validated_data['status'])
+
+        validated_data['status'] = Attendance_status(
+            validated_data['status']['value']
+        )
+        print(validated_data['status'])
+
+
+
+        return validated_data
+
+    def create(self, validated_data):
+        return Attendance.objects.create(
+            **validated_data
+        )
+       
+    

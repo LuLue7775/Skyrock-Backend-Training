@@ -81,7 +81,6 @@ class AbstractUser(AbstractBaseUser, PermissionsMixin):
         ),
     )
     date_joined = models.DateTimeField(_('date joined'), default=now)
-
     objects = UserManager()
     all_objects = BaseUserManager()
 
@@ -115,28 +114,39 @@ class Student(DateModel):
     name = models.CharField(max_length=50, db_index=True, blank=True)
     parent = models.ForeignKey('skyrock.Parent')
     age = models.IntegerField()
-    email = models.EmailField(_('email address'), null=True, unique=True)
-    phone = models.IntegerField()
+    email = models.EmailField(_('email address'), null=True)
+    phone = models.CharField(max_length=50, db_index=True, blank=True)
     hours = models.IntegerField()
-    current_teacher = models.ForeignKey('skyrock.User', blank=True)
-    pathways = models.ManyToManyField('skyrock.StudentPathway', blank=True)
+    current_teacher = models.CharField(max_length=50, db_index=True, blank=True)
+    current_pathway = models.CharField(max_length=50, db_index=True, blank=True)
+    pathways = models.ManyToManyField('skyrock.Pathway', blank=True)
 
 
 class Parent(DateModel):
     identifier = models.UUIDField(unique=True, db_index=True,
         default=uuid.uuid4)
     name = models.CharField(max_length=50, db_index=True, blank=True)
-    email = models.EmailField(_('email address'), null=True, unique=True)
-    phone = models.IntegerField()
+    email = models.EmailField(_('email address'), null=True)
+    phone = models.CharField(max_length=50, db_index=True, blank=True)
     cost = models.IntegerField()
     payment = models.CharField(max_length=200, blank=True)
-    
+
+
+class Attendance(DateModel):
+    identifier = models.UUIDField(unique=True, db_index=True,
+        default=uuid.uuid4)
+    student = models.ForeignKey('skyrock.Student')
+    pathway = models.CharField(max_length=50, db_index=True, blank=True)
+    status = EnumField(
+                Attendance_status, 
+                max_length=50,
+                default=Attendance_status.PRESENT)
+    date =  models.DateTimeField(default=now)
 
 class StudentColor(DateModel):
     identifier = models.UUIDField(unique=True, db_index=True,
         default=uuid.uuid4)
     color = models.ForeignKey('skyrock.Color')
-
     description = models.CharField(max_length=200, blank=True)
     user = models.ForeignKey('skyrock.Student')
     progress = models.IntegerField()
@@ -195,8 +205,8 @@ class Pathway(DateModel):
         default=uuid.uuid4)
     name = models.CharField(max_length=50, db_index=True, blank=True)
     description = models.CharField(max_length=200, blank=True)
-    colors = models.ManyToManyField('skyrock.Color')
-    projects = models.ManyToManyField('skyrock.Project')
+    # colors = models.ManyToManyField('skyrock.Color')
+    # projects = models.ManyToManyField('skyrock.Project')
 
 
 class Project(DateModel):

@@ -13,6 +13,7 @@ urlpatterns = (
     # Views
     url(r'^api/', include('skyrock.urls', namespace='skyrock')),
     url(r'^admin/', admin.site.urls),
+    # url(r'^booking/', include('booking.urls')),
 )
 
 # Add debug URL routes

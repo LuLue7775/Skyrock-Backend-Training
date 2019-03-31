@@ -3,7 +3,6 @@ import uuid
 from django.utils.translation import ugettext_lazy as _
 from django.utils.encoding import smart_text
 from rest_framework import authentication, exceptions
-from rehive import Rehive, APIException
 
 from .models import User
 

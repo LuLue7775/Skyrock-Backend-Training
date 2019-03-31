@@ -10,3 +10,15 @@ class Role(Enum):
     ADMIN = 'admin'
     DEVELOPER = 'developer'
 
+class Attendance_status(Enum):
+    PRESENT = 'present'
+    NOT_PRESENT = 'not-present'
+    EXCUSED = 'excused'
+
+
+# class pathways(Enum):
+#     PRESENT = 'present'
+#     NOT_PRESENT = 'not-present'
+#     EXCUSED = 'excused'
+    
+

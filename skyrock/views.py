@@ -835,3 +835,91 @@ class AdminStudentView(GenericAPIView):
              'data': StudentSerializer(instance).data}
         )
 
+
+class AdminStudentAttendanceView(ListAPIView):
+    allowed_methods = ('GET','POST')
+    #authentication_classes = (AdminAuthentication,)
+    serializer_class = StudentAttendanceSerializer    
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return CreateStudentAttendanceSerializer
+        return super().get_serializer_class()
+
+    def get_queryset(self, **kwargs):
+        # print(dir(self))
+        # print(self.kwargs)
+        try:
+            student = Student.objects.get(
+                identifier = self.kwargs['id'])
+        except Student.DoesNotExist:
+            raise serializers.ValidationError(
+                    {"attendance": ["The student does not exist."]})
+
+        return Attendance.objects.filter(
+            student=student
+            ).order_by('-created')
+
+    def post(self, request, *args, **kwargs):
+        #print(request.data)
+        request.data['student'] = kwargs["id"]
+        print(request.data)
+
+        serializer = self.get_serializer(data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+        print("here")
+
+        instance = serializer.save()
+        return Response(
+            {'status': 'success', 'data': StudentAttendanceSerializer(instance).data},
+            status=status.HTTP_201_CREATED
+        )
+
+
+class CreateAdminStudentAttendanceView(GenericAPIView):
+    allowed_methods = ('GET','PATCH', 'DELETE')
+    #authentication_classes = (AdminAuthentication,)
+    serializer_class = StudentAttendanceSerializer  
+
+    def delete(self, request, *args, **kwargs):
+        try:
+            attendance = Attendance.objects.get(
+                identifier=kwargs['id']
+            )
+        except Attendance.DoesNotExist:
+            raise exceptions.NotFound()
+
+        serializer = self.get_serializer(attendance)
+        instance = serializer.delete()
+        return Response({'status': 'success'})
+
+    def get(self, request, *args, **kwargs):
+        try:
+            attendance = Attendance.objects.get(
+            )
+        except Attendance.DoesNotExist:
+            raise exceptions.NotFound()
+
+        serializer = self.get_serializer(attendance)
+        return Response({'status': 'success', 'data': serializer.data})
+
+    def patch(self, request, *args, **kwargs):
+        try:
+            attendance = Attendance.objects.get(
+                identifier=kwargs['id'],
+            )
+        except Attendance.DoesNotExist:
+            raise exceptions.NotFound()
+
+        serializer = self.get_serializer(
+            Attendance, 
+            data=request.data,
+            partial=True)
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save()
+        return Response(
+            {'status': 'success',
+             'data': StudentAttendanceSerializer(instance).data}
+        )
+

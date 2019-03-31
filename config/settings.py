@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'rest_auth.registration',
     'anymail',
     'knox',
+    
 
     'skyrock',
 
