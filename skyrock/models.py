@@ -277,4 +277,5 @@ class Booking(DateModel):
     class_type = models.CharField(max_length=100)
     teacher = models.CharField(max_length=100)
     client_email = models.CharField(max_length=100)
+    client_name = models.CharField(max_length=100)
 
