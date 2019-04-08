@@ -43,10 +43,16 @@ urlpatterns = (
 
     # url(r'^staff/badge/$', views.AdminBadgeCreateView.as_view(), name='user-node-view'),
     # url(r'^staff/badge/(?P<id>([a-zA-Z0-9\_\-]+))/$', views.AdminBadgeView.as_view(), name='user-node-view'),
+    url(r'^staff/booking/$', views.CreateAdminBookingView.as_view(), name='user-node-view'),
+    url(r'^staff/booking/(?P<booking>([a-zA-Z0-9\_\-]+))/$', views.AdminBookingView.as_view(), name='user-node-view'),
 
     url(r'^staff/student/$', views.AdminStudentCreateView.as_view(), name='user-node-view'),
     url(r'^staff/student/(?P<id>([a-zA-Z0-9\_\-]+))/$', views.AdminStudentView.as_view(), name='user-node-view'),
     url(r'^staff/student/(?P<id>([a-zA-Z0-9\_\-]+))/attendance/$', views.AdminStudentAttendanceView.as_view(), name='user-node-view'),
+    url(r'^staff/student/(?P<id>([a-zA-Z0-9\_\-]+))/booking/$', views.AdminStudentBookingView.as_view(), name='user-node-view'),
+    url(r'^staff/student/(?P<id>([a-zA-Z0-9\_\-]+))/booking/(?P<booking>([a-zA-Z0-9\_\-]+))$', views.AdminStudentBookingView.as_view(), name='user-node-view'),
+
+
     
 )
 

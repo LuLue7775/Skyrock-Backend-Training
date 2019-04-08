@@ -743,14 +743,9 @@ class CreateStudentAttendanceSerializer(StudentAttendanceSerializer):
                 raise serializers.ValidationError(
                     {"attendance": ["The student does not exist."]})
 
-        print(validated_data['status'])
-
         validated_data['status'] = Attendance_status(
             validated_data['status']['value']
         )
-        print(validated_data['status'])
-
-
 
         return validated_data
 
@@ -759,4 +754,65 @@ class CreateStudentAttendanceSerializer(StudentAttendanceSerializer):
             **validated_data
         )
        
-    
+class StudentBookingSerializer(serializers.ModelSerializer):
+    location = serializers.ChoiceField(
+                required=True,
+                source='status.value',
+                choices=Location.choices())
+    student = StudentSerializer()
+
+    class Meta:
+        model = Booking
+        fields = (
+            'location',
+            'student',
+            'date',
+            'code',
+            'class_type',
+            'teacher',
+            'client_email',
+            'client_name'
+        )
+
+    def delete(self):
+        self.instance.delete()
+
+
+class CreateStudentBookingSerializer(serializers.ModelSerializer):
+    location = serializers.CharField()
+    student = serializers.CharField()
+    date = serializers.CharField()
+    code = serializers.CharField()
+    class_type = serializers.CharField()
+    teacher = serializers.CharField()
+    client_email = serializers.CharField()
+    client_name = serializers.CharField()
+
+    class Meta:
+        model = Booking
+        fields = (
+            'location',
+            'student',
+            'date',
+            'code',
+            'class_type',
+            'teacher',
+            'client_email',
+            'client_name'
+        )
+
+    def validate(self, validated_data):
+        
+        if validated_data.get('location') == 1 : 
+            validated_data['location'] = Location.TIANMU
+        elif validated_data.get('location') == 2 : 
+            validated_data['location'] = Location.DAZHI
+        else :
+            validated_data['location'] = Location.NONE
+
+        print(validated_data.get('date'))
+
+        
+
+        return validated_data
+        
