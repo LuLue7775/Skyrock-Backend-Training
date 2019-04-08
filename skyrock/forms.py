@@ -7,7 +7,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.contrib.sites.shortcuts import get_current_site
 from allauth.account import app_settings
-from allauth.account.forms import ResetPasswordForm
+from allauth.account.forms import ResetPasswordForm, BaseSignupForm
 from allauth.account.adapter import get_adapter
 from allauth.account.utils import user_username
 
@@ -46,3 +46,13 @@ class PasswordResetForm(ResetPasswordForm):
                 email,
                 context)
         return self.cleaned_data["email"]
+
+
+# class SignupForm(forms.Form):
+#     first_name = forms.CharField(max_length=30, label='Voornaam')
+#     last_name = forms.CharField(max_length=30, label='Achternaam')
+
+#     def signup(self, request, user):
+#         user.first_name = self.cleaned_data['first_name']
+#         user.last_name = self.cleaned_data['last_name']
+#         user.save()

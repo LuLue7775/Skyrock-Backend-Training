@@ -15,6 +15,12 @@ class Attendance_status(Enum):
     NOT_PRESENT = 'not-present'
     EXCUSED = 'excused'
 
+class Location(Enum):
+    TIANMU = 'tianmu'
+    DAZHI = 'dazhi'
+    NONE = 'none'
+    
+
 
 # class pathways(Enum):
 #     PRESENT = 'present'

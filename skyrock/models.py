@@ -40,6 +40,8 @@ class UserManager(BaseUserManager):
     def _create_user(self, email, password, **extra_fields):
         if not email:
             raise ValueError('The given email must be set')
+        print("model")
+        print(extra_fields)
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
@@ -47,6 +49,8 @@ class UserManager(BaseUserManager):
         return user
 
     def create_user(self, email, password=None, **extra_fields):
+        print(extra_fields)
+
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
         return self._create_user(email, password, **extra_fields)
@@ -83,6 +87,10 @@ class AbstractUser(AbstractBaseUser, PermissionsMixin):
     date_joined = models.DateTimeField(_('date joined'), default=now)
     objects = UserManager()
     all_objects = BaseUserManager()
+    role = EnumField(
+                Role, 
+                max_length=50,
+                default=Role.STUDENT)
 
     USERNAME_FIELD = 'email'
 
@@ -143,13 +151,13 @@ class Attendance(DateModel):
                 default=Attendance_status.PRESENT)
     date =  models.DateTimeField(default=now)
 
-class StudentColor(DateModel):
-    identifier = models.UUIDField(unique=True, db_index=True,
-        default=uuid.uuid4)
-    color = models.ForeignKey('skyrock.Color')
-    description = models.CharField(max_length=200, blank=True)
-    user = models.ForeignKey('skyrock.Student')
-    progress = models.IntegerField()
+# class StudentColor(DateModel):
+#     identifier = models.UUIDField(unique=True, db_index=True,
+#         default=uuid.uuid4)
+#     color = models.ForeignKey('skyrock.Color')
+#     description = models.CharField(max_length=200, blank=True)
+#     user = models.ForeignKey('skyrock.Student')
+#     progress = models.IntegerField()
 
 
 class StudentPathway(DateModel):
@@ -159,45 +167,45 @@ class StudentPathway(DateModel):
     complete = models.BooleanField(default=False)
 
 
-class StudentProject(DateModel):
-    identifier = models.UUIDField(unique=True, db_index=True,
-        default=uuid.uuid4)
-    project = models.ForeignKey('skyrock.Project')
-    user = models.ForeignKey('skyrock.Student')
-    progress = models.IntegerField()
-    complete = models.BooleanField(default=False)
+# class StudentProject(DateModel):
+#     identifier = models.UUIDField(unique=True, db_index=True,
+#         default=uuid.uuid4)
+#     project = models.ForeignKey('skyrock.Project')
+#     user = models.ForeignKey('skyrock.Student')
+#     progress = models.IntegerField()
+#     complete = models.BooleanField(default=False)
 
 
-class StudentTask(DateModel):
-    identifier = models.UUIDField(unique=True, db_index=True,
-        default=uuid.uuid4)
-    task = models.ForeignKey('skyrock.task')
-    user = models.ForeignKey('skyrock.Student')
-    complete = models.BooleanField(default=False)
+# class StudentTask(DateModel):
+#     identifier = models.UUIDField(unique=True, db_index=True,
+#         default=uuid.uuid4)
+#     task = models.ForeignKey('skyrock.task')
+#     user = models.ForeignKey('skyrock.Student')
+#     complete = models.BooleanField(default=False)
 
 
-class StudentChallenge(DateModel):
-    identifier = models.UUIDField(unique=True, db_index=True,
-        default=uuid.uuid4)
-    skill = models.ForeignKey('skyrock.Challenge')
-    user = models.ForeignKey('skyrock.Student')
-    complete = models.BooleanField(default=False)
-    level = models.IntegerField(default=0)
+# class StudentChallenge(DateModel):
+#     identifier = models.UUIDField(unique=True, db_index=True,
+#         default=uuid.uuid4)
+#     skill = models.ForeignKey('skyrock.Challenge')
+#     user = models.ForeignKey('skyrock.Student')
+#     complete = models.BooleanField(default=False)
+#     level = models.IntegerField(default=0)
 
 
-class StudentBadge(DateModel):
-    identifier = models.UUIDField(unique=True, db_index=True,
-        default=uuid.uuid4)
-    badge = models.ForeignKey('skyrock.Badge')
-    user = models.ForeignKey('skyrock.Student')
-    level = models.IntegerField(default=0)
+# class StudentBadge(DateModel):
+#     identifier = models.UUIDField(unique=True, db_index=True,
+#         default=uuid.uuid4)
+#     badge = models.ForeignKey('skyrock.Badge')
+#     user = models.ForeignKey('skyrock.Student')
+#     level = models.IntegerField(default=0)
 
 
-class Color(DateModel):
-    identifier = models.UUIDField(unique=True, db_index=True,
-        default=uuid.uuid4)
-    name = models.CharField(max_length=50, db_index=True, blank=True)
-    description = models.CharField(max_length=200, blank=True)
+# class Color(DateModel):
+#     identifier = models.UUIDField(unique=True, db_index=True,
+#         default=uuid.uuid4)
+#     name = models.CharField(max_length=50, db_index=True, blank=True)
+#     description = models.CharField(max_length=200, blank=True)
 
 
 class Pathway(DateModel):
@@ -205,43 +213,68 @@ class Pathway(DateModel):
         default=uuid.uuid4)
     name = models.CharField(max_length=50, db_index=True, blank=True)
     description = models.CharField(max_length=200, blank=True)
+    hours = models.IntegerField()
+
     # colors = models.ManyToManyField('skyrock.Color')
     # projects = models.ManyToManyField('skyrock.Project')
 
 
-class Project(DateModel):
-    identifier = models.UUIDField(unique=True, db_index=True,
-        default=uuid.uuid4)
-    name = models.CharField(max_length=50, db_index=True, blank=True)
+# class Project(DateModel):
+#     identifier = models.UUIDField(unique=True, db_index=True,
+#         default=uuid.uuid4)
+#     name = models.CharField(max_length=50, db_index=True, blank=True)
+#     description = models.CharField(max_length=200, blank=True)
+#     tasks = models.ManyToManyField('skyrock.Task')
+#     challenges = models.ManyToManyField('skyrock.Challenge')
+
+
+# class Task(DateModel):
+#     identifier = models.UUIDField(unique=True, db_index=True,
+#         default=uuid.uuid4)
+#     name = models.CharField(max_length=50, db_index=True, blank=True)
+#     description = models.CharField(max_length=200, blank=True)
+#     tags = models.ManyToManyField('skyrock.Tag', blank=True, default=None)
+
+
+# class Challenge(DateModel):
+#     identifier = models.UUIDField(unique=True, db_index=True,
+#         default=uuid.uuid4)
+#     name = models.CharField(max_length=50, db_index=True, blank=True)
+#     description = models.CharField(max_length=200, blank=True)
+#     tags = models.ManyToManyField('skyrock.Tag', blank=True)
+
+
+# class Tag(DateModel):
+#     name = models.CharField(max_length=50, db_index=True, unique=True)
+
+
+# class Badge(DateModel):
+#     identifier = models.UUIDField(unique=True, db_index=True,
+#         default=uuid.uuid4)
+#     name = models.CharField(max_length=50, db_index=True, blank=True)
+#     description = models.CharField(max_length=200, blank=True)
+#     tag = models.ForeignKey('skyrock.Tag')
+
+
+class Sale(DateModel):
+    location = EnumField(
+                Location, 
+                max_length=50)
+    student = models.ForeignKey('skyrock.Student')
+    amount = models.IntegerField()
     description = models.CharField(max_length=200, blank=True)
-    tasks = models.ManyToManyField('skyrock.Task')
-    challenges = models.ManyToManyField('skyrock.Challenge')
+    pathway = models.ForeignKey('skyrock.Pathway')
 
 
-class Task(DateModel):
-    identifier = models.UUIDField(unique=True, db_index=True,
-        default=uuid.uuid4)
-    name = models.CharField(max_length=50, db_index=True, blank=True)
-    description = models.CharField(max_length=200, blank=True)
-    tags = models.ManyToManyField('skyrock.Tag', blank=True, default=None)
-
-
-class Challenge(DateModel):
-    identifier = models.UUIDField(unique=True, db_index=True,
-        default=uuid.uuid4)
-    name = models.CharField(max_length=50, db_index=True, blank=True)
-    description = models.CharField(max_length=200, blank=True)
-    tags = models.ManyToManyField('skyrock.Tag', blank=True)
-
-
-class Tag(DateModel):
-    name = models.CharField(max_length=50, db_index=True, unique=True)
-
-
-class Badge(DateModel):
-    identifier = models.UUIDField(unique=True, db_index=True,
-        default=uuid.uuid4)
-    name = models.CharField(max_length=50, db_index=True, blank=True)
-    description = models.CharField(max_length=200, blank=True)
-    tag = models.ForeignKey('skyrock.Tag')
+class Booking(DateModel):
+    location = EnumField(
+                Location, 
+                max_length=50,
+                default=Location.NONE)
+    student = models.CharField(max_length=100)
+    date = models.DateField()
+    code = models.CharField(max_length=50)
+    class_type = models.CharField(max_length=100)
+    teacher = models.CharField(max_length=100)
+    client_email = models.CharField(max_length=100)
 

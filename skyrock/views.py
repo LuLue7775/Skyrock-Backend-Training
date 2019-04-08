@@ -260,76 +260,76 @@ class VerifyEmailView(GenericAPIView):
         return Response({'status': 'success'})
 
 
-class AdminColorCreateView(ListAPIView):
-    allowed_methods = ('GET','POST')
-    #authentication_classes = (AdminAuthentication,)
-    serializer_class = ColorSerializer    
+# class AdminColorCreateView(ListAPIView):
+#     allowed_methods = ('GET','POST')
+#     #authentication_classes = (AdminAuthentication,)
+#     serializer_class = ColorSerializer    
 
-    def get_serializer_class(self):
-        if self.request.method == 'POST':
-            return CreateColorSerializer
-        return super().get_serializer_class()
+#     def get_serializer_class(self):
+#         if self.request.method == 'POST':
+#             return CreateColorSerializer
+#         return super().get_serializer_class()
 
-    def get_queryset(self):
-        return Color.objects.filter(
-        ).order_by('-created')
+#     def get_queryset(self):
+#         return Color.objects.filter(
+#         ).order_by('-created')
 
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        instance = serializer.save()
-        return Response(
-            {'status': 'success', 'data': ColorSerializer(instance).data},
-            status=status.HTTP_201_CREATED
-        )
+#     def post(self, request, *args, **kwargs):
+#         serializer = self.get_serializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         instance = serializer.save()
+#         return Response(
+#             {'status': 'success', 'data': ColorSerializer(instance).data},
+#             status=status.HTTP_201_CREATED
+#         )
 
 
-class AdminColorView(GenericAPIView):
-    allowed_methods = ('GET','PATCH', 'DELETE')
-    #authentication_classes = (AdminAuthentication,)
-    serializer_class = ColorSerializer  
+# class AdminColorView(GenericAPIView):
+#     allowed_methods = ('GET','PATCH', 'DELETE')
+#     #authentication_classes = (AdminAuthentication,)
+#     serializer_class = ColorSerializer  
 
-    def delete(self, request, *args, **kwargs):
-        try:
-            color = Color.objects.get(
-                identifier=kwargs['id']
-            )
-        except Color.DoesNotExist:
-            raise exceptions.NotFound()
+#     def delete(self, request, *args, **kwargs):
+#         try:
+#             color = Color.objects.get(
+#                 identifier=kwargs['id']
+#             )
+#         except Color.DoesNotExist:
+#             raise exceptions.NotFound()
 
-        serializer = self.get_serializer(color)
-        instance = serializer.delete()
-        return Response({'status': 'success'})
+#         serializer = self.get_serializer(color)
+#         instance = serializer.delete()
+#         return Response({'status': 'success'})
 
-    def get(self, request, *args, **kwargs):
-        try:
-            color = Color.objects.get(
-                identifier=str(kwargs['id']),
-            )
-        except Color.DoesNotExist:
-            raise exceptions.NotFound()
+#     def get(self, request, *args, **kwargs):
+#         try:
+#             color = Color.objects.get(
+#                 identifier=str(kwargs['id']),
+#             )
+#         except Color.DoesNotExist:
+#             raise exceptions.NotFound()
 
-        serializer = self.get_serializer(color)
-        return Response({'status': 'success', 'data': serializer.data})
+#         serializer = self.get_serializer(color)
+#         return Response({'status': 'success', 'data': serializer.data})
 
-    def patch(self, request, *args, **kwargs):
-        try:
-            color = Color.objects.get(
-                identifier=kwargs['id'],
-            )
-        except Color.DoesNotExist:
-            raise exceptions.NotFound()
+#     def patch(self, request, *args, **kwargs):
+#         try:
+#             color = Color.objects.get(
+#                 identifier=kwargs['id'],
+#             )
+#         except Color.DoesNotExist:
+#             raise exceptions.NotFound()
 
-        serializer = self.get_serializer(
-            color, 
-            data=request.data,
-            partial=True)
-        serializer.is_valid(raise_exception=True)
-        instance = serializer.save()
-        return Response(
-            {'status': 'success',
-             'data': ColorSerializer(instance).data}
-        )
+#         serializer = self.get_serializer(
+#             color, 
+#             data=request.data,
+#             partial=True)
+#         serializer.is_valid(raise_exception=True)
+#         instance = serializer.save()
+#         return Response(
+#             {'status': 'success',
+#              'data': ColorSerializer(instance).data}
+#         )
 
 
 class AdminPathwayCreateView(ListAPIView):
@@ -404,364 +404,364 @@ class AdminPathwayView(GenericAPIView):
         )
 
 
-class AdminProjectCreateView(ListAPIView):
-    allowed_methods = ('GET','POST')
-    #authentication_classes = (AdminAuthentication,)
-    serializer_class = ProjectSerializer    
+# class AdminProjectCreateView(ListAPIView):
+#     allowed_methods = ('GET','POST')
+#     #authentication_classes = (AdminAuthentication,)
+#     serializer_class = ProjectSerializer    
 
-    def get_serializer_class(self):
-        if self.request.method == 'POST':
-            return CreateProjectSerializer
-        return super().get_serializer_class()
+#     def get_serializer_class(self):
+#         if self.request.method == 'POST':
+#             return CreateProjectSerializer
+#         return super().get_serializer_class()
 
-    def get_queryset(self):
-        return Project.objects.filter(
-        ).order_by('-created')
+#     def get_queryset(self):
+#         return Project.objects.filter(
+#         ).order_by('-created')
 
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        instance = serializer.save()
-        return Response(
-            {'status': 'success', 'data': ProjectSerializer(instance).data},
-            status=status.HTTP_201_CREATED
-        )
-
-
-class AdminProjectView(GenericAPIView):
-    allowed_methods = ('GET','PATCH', 'DELETE')
-    #authentication_classes = (AdminAuthentication,)
-    serializer_class = ProjectSerializer  
-
-    def delete(self, request, *args, **kwargs):
-        try:
-            project = Project.objects.get(
-                identifier=kwargs['id']
-            )
-        except Project.DoesNotExist:
-            raise exceptions.NotFound()
-
-        serializer = self.get_serializer(project)
-        instance = serializer.delete()
-        return Response({'status': 'success'})
-
-    def get(self, request, *args, **kwargs):
-        try:
-            project = Project.objects.get(
-                identifier=str(kwargs['id']),
-            )
-        except Project.DoesNotExist:
-            raise exceptions.NotFound()
-
-        serializer = self.get_serializer(project)
-        return Response({'status': 'success', 'data': serializer.data})
-
-    def patch(self, request, *args, **kwargs):
-        try:
-            project = Project.objects.get(
-                identifier=kwargs['id'],
-            )
-        except Project.DoesNotExist:
-            raise exceptions.NotFound()
-
-        serializer = self.get_serializer(
-            Project, 
-            data=request.data,
-            partial=True)
-        serializer.is_valid(raise_exception=True)
-        instance = serializer.save()
-        return Response(
-            {'status': 'success',
-             'data': ProjectSerializer(instance).data}
-        )
+#     def post(self, request, *args, **kwargs):
+#         serializer = self.get_serializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         instance = serializer.save()
+#         return Response(
+#             {'status': 'success', 'data': ProjectSerializer(instance).data},
+#             status=status.HTTP_201_CREATED
+#         )
 
 
-class AdminTaskCreateView(ListAPIView):
-    allowed_methods = ('GET','POST')
-    #authentication_classes = (AdminAuthentication,)
-    serializer_class = TaskSerializer    
+# class AdminProjectView(GenericAPIView):
+#     allowed_methods = ('GET','PATCH', 'DELETE')
+#     #authentication_classes = (AdminAuthentication,)
+#     serializer_class = ProjectSerializer  
 
-    def get_serializer_class(self):
-        if self.request.method == 'POST':
-            return CreateTaskSerializer
-        return super().get_serializer_class()
+#     def delete(self, request, *args, **kwargs):
+#         try:
+#             project = Project.objects.get(
+#                 identifier=kwargs['id']
+#             )
+#         except Project.DoesNotExist:
+#             raise exceptions.NotFound()
 
-    def get_queryset(self):
-        return Task.objects.filter(
-        ).order_by('-created')
+#         serializer = self.get_serializer(project)
+#         instance = serializer.delete()
+#         return Response({'status': 'success'})
 
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        instance = serializer.save()
-        return Response(
-            {'status': 'success', 'data': TaskSerializer(instance).data},
-            status=status.HTTP_201_CREATED
-        )
+#     def get(self, request, *args, **kwargs):
+#         try:
+#             project = Project.objects.get(
+#                 identifier=str(kwargs['id']),
+#             )
+#         except Project.DoesNotExist:
+#             raise exceptions.NotFound()
 
+#         serializer = self.get_serializer(project)
+#         return Response({'status': 'success', 'data': serializer.data})
 
-class AdminTaskView(GenericAPIView):
-    allowed_methods = ('GET','PATCH', 'DELETE')
-    #authentication_classes = (AdminAuthentication,)
-    serializer_class = TaskSerializer  
+#     def patch(self, request, *args, **kwargs):
+#         try:
+#             project = Project.objects.get(
+#                 identifier=kwargs['id'],
+#             )
+#         except Project.DoesNotExist:
+#             raise exceptions.NotFound()
 
-    def delete(self, request, *args, **kwargs):
-        try:
-            task = Task.objects.get(
-                identifier=kwargs['id']
-            )
-        except Task.DoesNotExist:
-            raise exceptions.NotFound()
-
-        serializer = self.get_serializer(task)
-        instance = serializer.delete()
-        return Response({'status': 'success'})
-
-    def get(self, request, *args, **kwargs):
-        try:
-            project = Task.objects.get(
-                identifier=str(kwargs['id']),
-            )
-        except Task.DoesNotExist:
-            raise exceptions.NotFound()
-
-        serializer = self.get_serializer(task)
-        return Response({'status': 'success', 'data': serializer.data})
-
-    def patch(self, request, *args, **kwargs):
-        try:
-            task = Task.objects.get(
-                identifier=kwargs['id'],
-            )
-        except Task.DoesNotExist:
-            raise exceptions.NotFound()
-
-        serializer = self.get_serializer(
-            Task, 
-            data=request.data,
-            partial=True)
-        serializer.is_valid(raise_exception=True)
-        instance = serializer.save()
-        return Response(
-            {'status': 'success',
-             'data': TaskSerializer(instance).data}
-        )
+#         serializer = self.get_serializer(
+#             Project, 
+#             data=request.data,
+#             partial=True)
+#         serializer.is_valid(raise_exception=True)
+#         instance = serializer.save()
+#         return Response(
+#             {'status': 'success',
+#              'data': ProjectSerializer(instance).data}
+#         )
 
 
-class AdminChallengeCreateView(ListAPIView):
-    allowed_methods = ('GET','POST')
-    #authentication_classes = (AdminAuthentication,)
-    serializer_class = ChallengeSerializer    
+# class AdminTaskCreateView(ListAPIView):
+#     allowed_methods = ('GET','POST')
+#     #authentication_classes = (AdminAuthentication,)
+#     serializer_class = TaskSerializer    
 
-    def get_serializer_class(self):
-        if self.request.method == 'POST':
-            return CreateChallengeSerializer
-        return super().get_serializer_class()
+#     def get_serializer_class(self):
+#         if self.request.method == 'POST':
+#             return CreateTaskSerializer
+#         return super().get_serializer_class()
 
-    def get_queryset(self):
-        return Challenge.objects.filter(
-        ).order_by('-created')
+#     def get_queryset(self):
+#         return Task.objects.filter(
+#         ).order_by('-created')
 
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        instance = serializer.save()
-        return Response(
-            {'status': 'success', 'data': ChallengeSerializer(instance).data},
-            status=status.HTTP_201_CREATED
-        )
-
-
-class AdminChallengeView(GenericAPIView):
-    allowed_methods = ('GET','PATCH', 'DELETE')
-    #authentication_classes = (AdminAuthentication,)
-    serializer_class = ChallengeSerializer  
-
-    def delete(self, request, *args, **kwargs):
-        try:
-            challenge = Challenge.objects.get(
-                identifier=kwargs['id']
-            )
-        except Challenge.DoesNotExist:
-            raise exceptions.NotFound()
-
-        serializer = self.get_serializer(skill)
-        instance = serializer.delete()
-        return Response({'status': 'success'})
-
-    def get(self, request, *args, **kwargs):
-        try:
-            challenge = Challenge.objects.get(
-                identifier=str(kwargs['id']),
-            )
-        except Challenge.DoesNotExist:
-            raise exceptions.NotFound()
-
-        serializer = self.get_serializer(challenge)
-        return Response({'status': 'success', 'data': serializer.data})
-
-    def patch(self, request, *args, **kwargs):
-        try:
-            challenge = Challenge.objects.get(
-                identifier=kwargs['id'],
-            )
-        except Challenge.DoesNotExist:
-            raise exceptions.NotFound()
-
-        serializer = self.get_serializer(
-            Challenge, 
-            data=request.data,
-            partial=True)
-        serializer.is_valid(raise_exception=True)
-        instance = serializer.save()
-        return Response(
-            {'status': 'success',
-             'data': Challengeerializer(instance).data}
-        )
+#     def post(self, request, *args, **kwargs):
+#         serializer = self.get_serializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         instance = serializer.save()
+#         return Response(
+#             {'status': 'success', 'data': TaskSerializer(instance).data},
+#             status=status.HTTP_201_CREATED
+#         )
 
 
-class AdminBadgeCreateView(ListAPIView):
-    allowed_methods = ('GET','POST')
-    #authentication_classes = (AdminAuthentication,)
-    serializer_class = BadgeSerializer    
+# class AdminTaskView(GenericAPIView):
+#     allowed_methods = ('GET','PATCH', 'DELETE')
+#     #authentication_classes = (AdminAuthentication,)
+#     serializer_class = TaskSerializer  
 
-    def get_serializer_class(self):
-        if self.request.method == 'POST':
-            return CreateBadgeSerializer
-        return super().get_serializer_class()
+#     def delete(self, request, *args, **kwargs):
+#         try:
+#             task = Task.objects.get(
+#                 identifier=kwargs['id']
+#             )
+#         except Task.DoesNotExist:
+#             raise exceptions.NotFound()
 
-    def get_queryset(self):
-        return Badge.objects.filter(
-        ).order_by('-created')
+#         serializer = self.get_serializer(task)
+#         instance = serializer.delete()
+#         return Response({'status': 'success'})
 
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        instance = serializer.save()
-        return Response(
-            {'status': 'success', 'data': BadgeSerializer(instance).data},
-            status=status.HTTP_201_CREATED
-        )
+#     def get(self, request, *args, **kwargs):
+#         try:
+#             project = Task.objects.get(
+#                 identifier=str(kwargs['id']),
+#             )
+#         except Task.DoesNotExist:
+#             raise exceptions.NotFound()
 
+#         serializer = self.get_serializer(task)
+#         return Response({'status': 'success', 'data': serializer.data})
 
-class AdminBadgeView(GenericAPIView):
-    allowed_methods = ('GET','PATCH', 'DELETE')
-    #authentication_classes = (AdminAuthentication,)
-    serializer_class = BadgeSerializer  
+#     def patch(self, request, *args, **kwargs):
+#         try:
+#             task = Task.objects.get(
+#                 identifier=kwargs['id'],
+#             )
+#         except Task.DoesNotExist:
+#             raise exceptions.NotFound()
 
-    def delete(self, request, *args, **kwargs):
-        try:
-            badge = Badge.objects.get(
-                identifier=kwargs['id']
-            )
-        except Badge.DoesNotExist:
-            raise exceptions.NotFound()
-
-        serializer = self.get_serializer(badge)
-        instance = serializer.delete()
-        return Response({'status': 'success'})
-
-    def get(self, request, *args, **kwargs):
-        try:
-            badge = Badge.objects.get(
-                identifier=str(kwargs['id']),
-            )
-        except Badge.DoesNotExist:
-            raise exceptions.NotFound()
-
-        serializer = self.get_serializer(badge)
-        return Response({'status': 'success', 'data': serializer.data})
-
-    def patch(self, request, *args, **kwargs):
-        try:
-            badge = Badge.objects.get(
-                identifier=kwargs['id'],
-            )
-        except Badge.DoesNotExist:
-            raise exceptions.NotFound()
-
-        serializer = self.get_serializer(
-            Badge, 
-            data=request.data,
-            partial=True)
-        serializer.is_valid(raise_exception=True)
-        instance = serializer.save()
-        return Response(
-            {'status': 'success',
-             'data': BadgeSerializer(instance).data}
-        )
+#         serializer = self.get_serializer(
+#             Task, 
+#             data=request.data,
+#             partial=True)
+#         serializer.is_valid(raise_exception=True)
+#         instance = serializer.save()
+#         return Response(
+#             {'status': 'success',
+#              'data': TaskSerializer(instance).data}
+#         )
 
 
-class AdminTagCreateView(ListAPIView):
-    allowed_methods = ('GET','POST')
-    #authentication_classes = (AdminAuthentication,)
-    serializer_class = ColorSerializer    
+# class AdminChallengeCreateView(ListAPIView):
+#     allowed_methods = ('GET','POST')
+#     #authentication_classes = (AdminAuthentication,)
+#     serializer_class = ChallengeSerializer    
 
-    def get_serializer_class(self):
-        if self.request.method == 'POST':
-            return CreateColorSerializer
-        return super().get_serializer_class()
+#     def get_serializer_class(self):
+#         if self.request.method == 'POST':
+#             return CreateChallengeSerializer
+#         return super().get_serializer_class()
 
-    def get_queryset(self):
-        return Color.objects.filter(
-        ).order_by('-created')
+#     def get_queryset(self):
+#         return Challenge.objects.filter(
+#         ).order_by('-created')
 
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        instance = serializer.save()
-        return Response(
-            {'status': 'success', 'data': ColorSerializer(instance).data},
-            status=status.HTTP_201_CREATED
-        )
+#     def post(self, request, *args, **kwargs):
+#         serializer = self.get_serializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         instance = serializer.save()
+#         return Response(
+#             {'status': 'success', 'data': ChallengeSerializer(instance).data},
+#             status=status.HTTP_201_CREATED
+#         )
 
 
-class AdminTagView(GenericAPIView):
-    allowed_methods = ('GET','PATCH', 'DELETE')
-    #authentication_classes = (AdminAuthentication,)
-    serializer_class = ColorSerializer  
+# class AdminChallengeView(GenericAPIView):
+#     allowed_methods = ('GET','PATCH', 'DELETE')
+#     #authentication_classes = (AdminAuthentication,)
+#     serializer_class = ChallengeSerializer  
 
-    def delete(self, request, *args, **kwargs):
-        try:
-            color = Color.objects.get(
-                identifier=kwargs['id']
-            )
-        except Color.DoesNotExist:
-            raise exceptions.NotFound()
+#     def delete(self, request, *args, **kwargs):
+#         try:
+#             challenge = Challenge.objects.get(
+#                 identifier=kwargs['id']
+#             )
+#         except Challenge.DoesNotExist:
+#             raise exceptions.NotFound()
 
-        serializer = self.get_serializer(color)
-        instance = serializer.delete()
-        return Response({'status': 'success'})
+#         serializer = self.get_serializer(skill)
+#         instance = serializer.delete()
+#         return Response({'status': 'success'})
 
-    def get(self, request, *args, **kwargs):
-        try:
-            color = Color.objects.get(
-                identifier=str(kwargs['id']),
-            )
-        except Color.DoesNotExist:
-            raise exceptions.NotFound()
+#     def get(self, request, *args, **kwargs):
+#         try:
+#             challenge = Challenge.objects.get(
+#                 identifier=str(kwargs['id']),
+#             )
+#         except Challenge.DoesNotExist:
+#             raise exceptions.NotFound()
 
-        serializer = self.get_serializer(color)
-        return Response({'status': 'success', 'data': serializer.data})
+#         serializer = self.get_serializer(challenge)
+#         return Response({'status': 'success', 'data': serializer.data})
 
-    def patch(self, request, *args, **kwargs):
-        try:
-            color = Color.objects.get(
-                identifier=kwargs['id'],
-            )
-        except Color.DoesNotExist:
-            raise exceptions.NotFound()
+#     def patch(self, request, *args, **kwargs):
+#         try:
+#             challenge = Challenge.objects.get(
+#                 identifier=kwargs['id'],
+#             )
+#         except Challenge.DoesNotExist:
+#             raise exceptions.NotFound()
 
-        serializer = self.get_serializer(
-            color, 
-            data=request.data,
-            partial=True)
-        serializer.is_valid(raise_exception=True)
-        instance = serializer.save()
-        return Response(
-            {'status': 'success',
-             'data': ColorSerializer(instance).data}
-        )
+#         serializer = self.get_serializer(
+#             Challenge, 
+#             data=request.data,
+#             partial=True)
+#         serializer.is_valid(raise_exception=True)
+#         instance = serializer.save()
+#         return Response(
+#             {'status': 'success',
+#              'data': Challengeerializer(instance).data}
+#         )
+
+
+# class AdminBadgeCreateView(ListAPIView):
+#     allowed_methods = ('GET','POST')
+#     #authentication_classes = (AdminAuthentication,)
+#     serializer_class = BadgeSerializer    
+
+#     def get_serializer_class(self):
+#         if self.request.method == 'POST':
+#             return CreateBadgeSerializer
+#         return super().get_serializer_class()
+
+#     def get_queryset(self):
+#         return Badge.objects.filter(
+#         ).order_by('-created')
+
+#     def post(self, request, *args, **kwargs):
+#         serializer = self.get_serializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         instance = serializer.save()
+#         return Response(
+#             {'status': 'success', 'data': BadgeSerializer(instance).data},
+#             status=status.HTTP_201_CREATED
+#         )
+
+
+# class AdminBadgeView(GenericAPIView):
+#     allowed_methods = ('GET','PATCH', 'DELETE')
+#     #authentication_classes = (AdminAuthentication,)
+#     serializer_class = BadgeSerializer  
+
+#     def delete(self, request, *args, **kwargs):
+#         try:
+#             badge = Badge.objects.get(
+#                 identifier=kwargs['id']
+#             )
+#         except Badge.DoesNotExist:
+#             raise exceptions.NotFound()
+
+#         serializer = self.get_serializer(badge)
+#         instance = serializer.delete()
+#         return Response({'status': 'success'})
+
+#     def get(self, request, *args, **kwargs):
+#         try:
+#             badge = Badge.objects.get(
+#                 identifier=str(kwargs['id']),
+#             )
+#         except Badge.DoesNotExist:
+#             raise exceptions.NotFound()
+
+#         serializer = self.get_serializer(badge)
+#         return Response({'status': 'success', 'data': serializer.data})
+
+#     def patch(self, request, *args, **kwargs):
+#         try:
+#             badge = Badge.objects.get(
+#                 identifier=kwargs['id'],
+#             )
+#         except Badge.DoesNotExist:
+#             raise exceptions.NotFound()
+
+#         serializer = self.get_serializer(
+#             Badge, 
+#             data=request.data,
+#             partial=True)
+#         serializer.is_valid(raise_exception=True)
+#         instance = serializer.save()
+#         return Response(
+#             {'status': 'success',
+#              'data': BadgeSerializer(instance).data}
+#         )
+
+
+# class AdminTagCreateView(ListAPIView):
+#     allowed_methods = ('GET','POST')
+#     #authentication_classes = (AdminAuthentication,)
+#     serializer_class = ColorSerializer    
+
+#     def get_serializer_class(self):
+#         if self.request.method == 'POST':
+#             return CreateColorSerializer
+#         return super().get_serializer_class()
+
+#     def get_queryset(self):
+#         return Color.objects.filter(
+#         ).order_by('-created')
+
+#     def post(self, request, *args, **kwargs):
+#         serializer = self.get_serializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         instance = serializer.save()
+#         return Response(
+#             {'status': 'success', 'data': ColorSerializer(instance).data},
+#             status=status.HTTP_201_CREATED
+#         )
+
+
+# class AdminTagView(GenericAPIView):
+#     allowed_methods = ('GET','PATCH', 'DELETE')
+#     #authentication_classes = (AdminAuthentication,)
+#     serializer_class = ColorSerializer  
+
+#     def delete(self, request, *args, **kwargs):
+#         try:
+#             color = Color.objects.get(
+#                 identifier=kwargs['id']
+#             )
+#         except Color.DoesNotExist:
+#             raise exceptions.NotFound()
+
+#         serializer = self.get_serializer(color)
+#         instance = serializer.delete()
+#         return Response({'status': 'success'})
+
+#     def get(self, request, *args, **kwargs):
+#         try:
+#             color = Color.objects.get(
+#                 identifier=str(kwargs['id']),
+#             )
+#         except Color.DoesNotExist:
+#             raise exceptions.NotFound()
+
+#         serializer = self.get_serializer(color)
+#         return Response({'status': 'success', 'data': serializer.data})
+
+#     def patch(self, request, *args, **kwargs):
+#         try:
+#             color = Color.objects.get(
+#                 identifier=kwargs['id'],
+#             )
+#         except Color.DoesNotExist:
+#             raise exceptions.NotFound()
+
+#         serializer = self.get_serializer(
+#             color, 
+#             data=request.data,
+#             partial=True)
+#         serializer.is_valid(raise_exception=True)
+#         instance = serializer.save()
+#         return Response(
+#             {'status': 'success',
+#              'data': ColorSerializer(instance).data}
+#         )
 
 
 class AdminStudentCreateView(ListAPIView):

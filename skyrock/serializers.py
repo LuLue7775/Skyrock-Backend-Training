@@ -43,10 +43,14 @@ class DateSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(DateSerializer):
+    role = serializers.ChoiceField(
+        required=False,
+        source='role.value',
+        choices=Role.choices())
     
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'email', 'created', 'updated')
+        fields = ('first_name', 'last_name', 'email', 'created', 'updated', 'role')
         read_only_field = ('created', 'updated',)
 
     def validate(self, validated_data):
@@ -68,9 +72,9 @@ class RegisterSerializer(serializers.Serializer):
         max_length=128, style={'input_type': 'password'})
     password2 = serializers.CharField(required=True, write_only=True,
         max_length=128, style={'input_type': 'password'})
-    # role = serializers.ChoiceField(
-    #     required=False,
-    #     choices=Role.choices())
+    role = serializers.ChoiceField(
+        required=False,
+        choices=Role.choices())
 
     def validate_email(self, email):
         return get_adapter().clean_email(email)
@@ -94,6 +98,7 @@ class RegisterSerializer(serializers.Serializer):
                 {"email": [_("A user is already registered "
                              "with this email address.")]})
 
+
         return data
 
     def save(self, request):
@@ -102,6 +107,9 @@ class RegisterSerializer(serializers.Serializer):
         self.cleaned_data = self.validated_data
         adapter.save_user(request, user, self)
         setup_user_email(request, user, [])
+        user.role = request.data['role']
+        user.save()
+        
         return user
 
 
@@ -190,64 +198,64 @@ class VerifyEmailSerializer(serializers.Serializer):
     key = serializers.CharField(required=True)
 
 
-class ColorSerializer(serializers.ModelSerializer):
-    identifier = serializers.UUIDField(read_only=True)
-    class Meta:
-        model = Color
-        fields = (
-            'identifier',
-            'name',
-            'description'
-        )
+# class ColorSerializer(serializers.ModelSerializer):
+#     identifier = serializers.UUIDField(read_only=True)
+#     class Meta:
+#         model = Color
+#         fields = (
+#             'identifier',
+#             'name',
+#             'description'
+#         )
 
-    def delete(self):
-        self.instance.delete()
-
-
-class ChallengeSerializer(serializers.ModelSerializer):
-    identifier = serializers.UUIDField(read_only=True)
-    class Meta:
-        model = Challenge
-        fields = (
-            'identifier',
-            'name',
-            'description'
-        )
-
-    def delete(self):
-        self.instance.delete()
+#     def delete(self):
+#         self.instance.delete()
 
 
-class TaskSerializer(serializers.ModelSerializer):
-    identifier = serializers.UUIDField(read_only=True)
-    class Meta:
-        model = Task
-        fields = (
-            'identifier',
-            'name',
-            'description',
-        )
+# class ChallengeSerializer(serializers.ModelSerializer):
+#     identifier = serializers.UUIDField(read_only=True)
+#     class Meta:
+#         model = Challenge
+#         fields = (
+#             'identifier',
+#             'name',
+#             'description'
+#         )
 
-    def delete(self):
-        self.instance.delete()
+#     def delete(self):
+#         self.instance.delete()
 
 
-class ProjectSerializer(serializers.ModelSerializer):
-    identifier = serializers.UUIDField(read_only=True)
-    tasks = TaskSerializer(many=True)
-    challenges = ChallengeSerializer(many=True)
+# class TaskSerializer(serializers.ModelSerializer):
+#     identifier = serializers.UUIDField(read_only=True)
+#     class Meta:
+#         model = Task
+#         fields = (
+#             'identifier',
+#             'name',
+#             'description',
+#         )
 
-    class Meta:
-        model = Project
-        fields = (
-            'identifier',
-            'name',
-            'description',
-            'tasks',
-            'challenges'
-        )
-    def delete(self):
-        self.instance.delete()
+#     def delete(self):
+#         self.instance.delete()
+
+
+# class ProjectSerializer(serializers.ModelSerializer):
+#     identifier = serializers.UUIDField(read_only=True)
+#     tasks = TaskSerializer(many=True)
+#     challenges = ChallengeSerializer(many=True)
+
+#     class Meta:
+#         model = Project
+#         fields = (
+#             'identifier',
+#             'name',
+#             'description',
+#             'tasks',
+#             'challenges'
+#         )
+#     def delete(self):
+#         self.instance.delete()
 
 
 class PathwaySerializer(serializers.ModelSerializer):
@@ -269,50 +277,50 @@ class PathwaySerializer(serializers.ModelSerializer):
         self.instance.delete()
 
 
-class BadgeSerializer(serializers.ModelSerializer):
-    identifier = serializers.UUIDField(read_only=True)
-    class Meta:
-        model = Badge
-        fields = (
-            'identifier',
-            'name',
-            'description'
-        )
+# class BadgeSerializer(serializers.ModelSerializer):
+#     identifier = serializers.UUIDField(read_only=True)
+#     class Meta:
+#         model = Badge
+#         fields = (
+#             'identifier',
+#             'name',
+#             'description'
+#         )
 
-    def delete(self):
-        self.instance.delete()
+#     def delete(self):
+#         self.instance.delete()
 
 
-class TagSerializer(serializers.ModelSerializer):
-    identifier = serializers.UUIDField(read_only=True)
-    class Meta:
-        model = Tag
-        fields = (
-            'name'
-        )
+# class TagSerializer(serializers.ModelSerializer):
+#     identifier = serializers.UUIDField(read_only=True)
+#     class Meta:
+#         model = Tag
+#         fields = (
+#             'name'
+#         )
 
-    def delete(self):
-        self.instance.delete()
+#     def delete(self):
+#         self.instance.delete()
         
 
-class CreateTagSerializer(TagSerializer):
-    name = serializers.CharField(required=True)
+# class CreateTagSerializer(TagSerializer):
+#     name = serializers.CharField(required=True)
 
-    class Meta:
-        model = ColorSerializer.Meta.model
-        fields = ColorSerializer.Meta.fields
+#     class Meta:
+#         model = ColorSerializer.Meta.model
+#         fields = ColorSerializer.Meta.fields
 
 
-class CreateColorSerializer(ColorSerializer):
-    name = serializers.CharField(required=True)
-    description = serializers.CharField(required=True)
+# class CreateColorSerializer(ColorSerializer):
+#     name = serializers.CharField(required=True)
+#     description = serializers.CharField(required=True)
 
-    class Meta:
-        model = ColorSerializer.Meta.model
-        fields = ColorSerializer.Meta.fields
-        read_only_fields = (
-            'identifier',
-        )
+#     class Meta:
+#         model = ColorSerializer.Meta.model
+#         fields = ColorSerializer.Meta.fields
+#         read_only_fields = (
+#             'identifier',
+#         )
 
 
 class CreatePathwaySerializer(PathwaySerializer):
@@ -367,126 +375,126 @@ class CreatePathwaySerializer(PathwaySerializer):
         return pathway
 
         
-class CreateProjectSerializer(ProjectSerializer):
-    name = serializers.CharField(required=True)
-    description = serializers.CharField(required=True)
-    tasks = serializers.ListField(required=True)
-    challenges = serializers.ListField(required=False)
+# class CreateProjectSerializer(ProjectSerializer):
+#     name = serializers.CharField(required=True)
+#     description = serializers.CharField(required=True)
+#     tasks = serializers.ListField(required=True)
+#     challenges = serializers.ListField(required=False)
 
-    class Meta:
-        model = ProjectSerializer.Meta.model
-        fields = (
-            'identifier',
-            'name',
-            'description',
-            'tasks',
-            'challenges'
-        )
-        read_only_fields = (
-            'identifier',
-        )
+#     class Meta:
+#         model = ProjectSerializer.Meta.model
+#         fields = (
+#             'identifier',
+#             'name',
+#             'description',
+#             'tasks',
+#             'challenges'
+#         )
+#         read_only_fields = (
+#             'identifier',
+#         )
 
-    def validate(self, validated_data):
-        return validated_data
+#     def validate(self, validated_data):
+#         return validated_data
 
-    def create(self, validated_data):
-        tasks = validated_data.get('tasks')
-        challenges = validated_data.get('challenges')
+#     def create(self, validated_data):
+#         tasks = validated_data.get('tasks')
+#         challenges = validated_data.get('challenges')
 
-        project = Project.objects.create(
-                name=validated_data['name'],
-                description=validated_data['description'],
-                )
+#         project = Project.objects.create(
+#                 name=validated_data['name'],
+#                 description=validated_data['description'],
+#                 )
 
-        for item in tasks:
-            try:
-                task = Task.objects.get(identifier=item)
-            except Task.DoesNotExist:
-                raise serializers.ValidationError(
-                    {"tasks": ["The task does not exist."]})
-            project.tasks.add(task)
+#         for item in tasks:
+#             try:
+#                 task = Task.objects.get(identifier=item)
+#             except Task.DoesNotExist:
+#                 raise serializers.ValidationError(
+#                     {"tasks": ["The task does not exist."]})
+#             project.tasks.add(task)
 
-        for items in challenges:
-            try:
-                challenge = Challenge.objects.get(identifier=items)
-            except Challenge.DoesNotExist:
-                raise serializers.ValidationError(
-                    {"challenge": ["The challenge does not exist."]})
-            project.challenges.add(challenge)
+#         for items in challenges:
+#             try:
+#                 challenge = Challenge.objects.get(identifier=items)
+#             except Challenge.DoesNotExist:
+#                 raise serializers.ValidationError(
+#                     {"challenge": ["The challenge does not exist."]})
+#             project.challenges.add(challenge)
 
-        return project
+#         return project
 
 
-class CreateTaskSerializer(TaskSerializer):
-    name = serializers.CharField(required=True)
-    description = serializers.CharField(required=True)
-    tags = serializers.ListField(required=True)
+# class CreateTaskSerializer(TaskSerializer):
+#     name = serializers.CharField(required=True)
+#     description = serializers.CharField(required=True)
+#     tags = serializers.ListField(required=True)
 
-    class Meta:
-        model = TaskSerializer.Meta.model
-        fields = (
-            'identifier',
-            'name',
-            'description',
-            'tags',
-        )
-        read_only_fields = (
-            'identifier',
-        )
+#     class Meta:
+#         model = TaskSerializer.Meta.model
+#         fields = (
+#             'identifier',
+#             'name',
+#             'description',
+#             'tags',
+#         )
+#         read_only_fields = (
+#             'identifier',
+#         )
 
-    def validate(self, validated_data):
-        return validated_data
+#     def validate(self, validated_data):
+#         return validated_data
 
-    def create(self, validated_data):
-        tags = validated_data.get('tags')
+#     def create(self, validated_data):
+#         tags = validated_data.get('tags')
 
-        task = Task.objects.create(
-                name=validated_data['name'],
-                description=validated_data['description'],
-                )
+#         task = Task.objects.create(
+#                 name=validated_data['name'],
+#                 description=validated_data['description'],
+#                 )
 
-        for item in tags:
+#         for item in tags:
             
-            tag = Tag.objects.get_or_create(name=item)
-            task.tags.add(tag)
+#             tag = Tag.objects.get_or_create(name=item)
+#             task.tags.add(tag)
 
-        return task
+#         return task
 
 
-class CreateChallengeSerializer(ChallengeSerializer):
-    name = serializers.CharField(required=True)
-    description = serializers.CharField(required=True)
-    tags = serializers.ListField(required=True)
+# class CreateChallengeSerializer(ChallengeSerializer):
+#     name = serializers.CharField(required=True)
+#     description = serializers.CharField(required=True)
+#     tags = serializers.ListField(required=True)
 
-    class Meta:
-        model = ChallengeSerializer.Meta.model
-        fields = (
-            'identifier',
-            'name',
-            'description',
-            'tags',
-        )
-        read_only_fields = (
-            'identifier',
-        )
+#     class Meta:
+#         model = ChallengeSerializer.Meta.model
+#         fields = (
+#             'identifier',
+#             'name',
+#             'description',
+#             'tags',
+#         )
+#         read_only_fields = (
+#             'identifier',
+#         )
 
-    def validate(self, validated_data):
-        return validated_data
+#     def validate(self, validated_data):
+#         return validated_data
 
-    def create(self, validated_data):
-        tags = validated_data.get('tags')
+#     def create(self, validated_data):
+#         tags = validated_data.get('tags')
 
-        challenge = Challenge.objects.create(
-                name=validated_data['name'],
-                description=validated_data['description'],
-                )
+#         challenge = Challenge.objects.create(
+#                 name=validated_data['name'],
+#                 description=validated_data['description'],
+#                 )
 
-        for item in tags:
+#         for item in tags:
             
-            tag = Tag.objects.get_or_create(name=item)
-            task.tags.add(tag)
+#             tag = Tag.objects.get_or_create(name=item)
+#             task.tags.add(tag)
 
-        return challenge
+#         return challenge
 
 
 # class CreateTaskSerializer(TaskSerializer):
@@ -500,28 +508,28 @@ class CreateChallengeSerializer(ChallengeSerializer):
 #             'identifier',
 #         )
 
-class CreateBadgeSerializer(BadgeSerializer):
-    name = serializers.CharField(required=False)
-    description = serializers.CharField(required=False)
-    tag = serializers.CharField(required=False)
-    class Meta:
-        model = BadgeSerializer.Meta.model
-        fields = BadgeSerializer.Meta.fields
-        read_only_fields = (
-            'identifier',
-        )
+# class CreateBadgeSerializer(BadgeSerializer):
+#     name = serializers.CharField(required=False)
+#     description = serializers.CharField(required=False)
+#     tag = serializers.CharField(required=False)
+#     class Meta:
+#         model = BadgeSerializer.Meta.model
+#         fields = BadgeSerializer.Meta.fields
+#         read_only_fields = (
+#             'identifier',
+#         )
 
-    def validate(self, validated_data):
+#     def validate(self, validated_data):
 
-        try:
-            tag = Tag.objects.get(
-                name=validated_data('tag'),
-            )
-            validated_data['tag'] = tag
-        except Tag.DoesNotExist:
-            raise exceptions.NotFound()
+#         try:
+#             tag = Tag.objects.get(
+#                 name=validated_data('tag'),
+#             )
+#             validated_data['tag'] = tag
+#         except Tag.DoesNotExist:
+#             raise exceptions.NotFound()
 
-        return validated_data
+#         return validated_data
 
 
 class StudentPathwaySerializer(serializers.ModelSerializer):
