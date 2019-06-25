@@ -123,11 +123,15 @@ class Student(DateModel):
     age = models.IntegerField()
     email = models.EmailField(_('email address'), null=True)
     phone = models.CharField(max_length=50, db_index=True, blank=True)
-    hours_remaining = models.IntegerField()
-    hours_spent = models.IntegerField()
+    #hours_remaining = models.IntegerField()
+    #hours_spent = models.IntegerField()
+    location = models.CharField(max_length=50, db_index=True, blank=True)
+    medical_condition = models.CharField(max_length=100, db_index=True, blank=True, null=True)
     parent = models.ForeignKey('skyrock.Parent')
     notes = models.CharField(max_length=200, db_index=True, blank=True)
     badges = models.ManyToManyField('skyrock.Badge', blank=True)
+    current_pathway = models.CharField(max_length=200, db_index=True, blank=True)
+
 
 
 class Parent(DateModel):
@@ -137,10 +141,7 @@ class Parent(DateModel):
     email = models.EmailField(_('email address'), null=True)
     phone = models.CharField(max_length=50, db_index=True, blank=True)
     payment_status = models.CharField(max_length=200, blank=True)
-    location = EnumField(
-                Location, 
-                max_length=50,
-                default=Location.NONE)
+    
 
 class Attendance(DateModel):
     identifier = models.UUIDField(unique=True, db_index=True,
@@ -170,7 +171,7 @@ class Pathway(DateModel):
         default=uuid.uuid4)
     name = models.CharField(max_length=50, db_index=True, blank=True)
     description = models.CharField(max_length=200, blank=True)
-    hours = models.IntegerField()
+    
 
 
 class Sale(DateModel):
@@ -188,14 +189,11 @@ class Sale(DateModel):
 class Booking(DateModel):
     identifier = models.UUIDField(unique=True, db_index=True,
         default=uuid.uuid4)
-    location = EnumField(
-                Location, 
-                max_length=50,
-                default=Location.NONE)
+    location = models.CharField(max_length=100)
     student = models.ForeignKey('skyrock.Student')
-    date = models.DateField()
-    class_type = models.CharField(max_length=100)
-    teacher = models.CharField(max_length=100)
+    date = models.DateTimeField()
+    pathway = models.CharField(max_length=100)
+    #teacher = models.CharField(max_length=100)
 
 
 class Badge(DateModel):
