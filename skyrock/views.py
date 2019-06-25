@@ -52,9 +52,19 @@ def root(request, format=None):
                 ('Password Reset', reverse('skyrock:user-password-reset',
                     request=request,
                     format=format)),
-                ('Box', reverse('skyrock:user-node-view',
+                ('Course', reverse('skyrock:user-course-view',
                     request=request,
                     format=format)),
+                ('Booking', reverse('skyrock:user-booking-view',
+                    request=request,
+                    format=format)),
+                ('Student', reverse('skyrock:user-student-view',
+                    request=request,
+                    format=format)),
+                ('Parent', reverse('skyrock:user-parent-view',
+                    request=request,
+                    format=format)),
+                    
                     
             ])},
         ])
