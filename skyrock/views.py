@@ -61,7 +61,7 @@ def root(request, format=None):
                 ('Student', reverse('skyrock:user-student-view',
                     request=request,
                     format=format)),
-                ('Parent', reverse('skyrock:user-parent-view',
+                ('Parent', reverse('skyrock:user-parents-view',
                     request=request,
                     format=format)),
                     
