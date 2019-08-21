@@ -197,13 +197,13 @@ class VerifyEmailSerializer(serializers.Serializer):
     key = serializers.CharField(required=True)
 
 
-class PathwaySerializer(serializers.ModelSerializer):
+class ClubSerializer(serializers.ModelSerializer):
     identifier = serializers.UUIDField(read_only=True)
     # colors = ColorSerializer(many=True)
     # projects = ProjectSerializer(many=True)
 
     class Meta:
-        model = Pathway
+        model = Club
         fields = (
             'identifier',
             'name',
@@ -216,14 +216,14 @@ class PathwaySerializer(serializers.ModelSerializer):
         self.instance.delete()
 
 
-class CreatePathwaySerializer(PathwaySerializer):
+class CreateClubSerializer(ClubSerializer):
     name = serializers.CharField(required=True)
     description = serializers.CharField(required=True)
     # colors = serializers.ListField(required=True)
     # projects = serializers.ListField(required=True)
 
     class Meta:
-        model = PathwaySerializer.Meta.model
+        model = ClubSerializer.Meta.model
         fields = (
             'identifier',
             'name',
@@ -244,7 +244,7 @@ class CreatePathwaySerializer(PathwaySerializer):
         #colors = validated_data.get('colors')
         #projects = validated_data.get('projects')
 
-        pathway = Pathway.objects.create(
+        club = Club.objects.create(
                 name=validated_data['name'],
                 description=validated_data['description'],
                 )
@@ -265,19 +265,19 @@ class CreatePathwaySerializer(PathwaySerializer):
         #             {"project": ["The project does not exist."]})
         #     pathway.projects.add(project)
 
-        return pathway
+        return club
 
 
-class StudentPathwaySerializer(serializers.ModelSerializer):
+class StudentClubSerializer(serializers.ModelSerializer):
     identifier = serializers.UUIDField(read_only=True)
-    pathway = PathwaySerializer()
+    club = ClubSerializer()
     complete = serializers.BooleanField()
 
     class Meta:
-        model = Pathway
+        model = Club
         fields = (
             'identifier',
-            'pathway',
+            'club',
             'complete'
         )
 
@@ -285,14 +285,14 @@ class StudentPathwaySerializer(serializers.ModelSerializer):
         self.instance.delete()
 
 
-class ParentSerializer(serializers.ModelSerializer):
+class ClientSerializer(serializers.ModelSerializer):
     identifier = serializers.UUIDField(read_only=True)
     email = serializers.CharField()
     phone = serializers.IntegerField()
     name = serializers.CharField(required=False)
 
     class Meta:
-        model = Parent
+        model = Client
         fields = (
             'identifier',
             'name',
@@ -306,11 +306,11 @@ class ParentSerializer(serializers.ModelSerializer):
 
 class StudentSerializer(serializers.ModelSerializer):
     #pathways = PathwaySerializer(many=True)
-    parent = ParentSerializer()
+    client = ClientSerializer()
     age = serializers.IntegerField()
     email = serializers.CharField()
     phone = serializers.CharField()
-    current_pathway =  PathwaySerializer()
+    current_club =  ClubSerializer()
     notes = serializers.CharField()
     location = serializers.CharField()
     medical_condition = serializers.CharField()
@@ -321,11 +321,11 @@ class StudentSerializer(serializers.ModelSerializer):
             'identifier',
             'name',
             #'pathways',
-            'parent',
+            'client',
             'age',
             'email',
             'phone',
-            'current_pathway',
+            'current_club',
             'notes',
             'location',
             'medical_condition',
@@ -347,7 +347,7 @@ class ShortStudentSerializer(serializers.ModelSerializer):
             'phone',
             'hours',
             'current_teacher',
-            'current_pathway'
+            'current_club'
         )
 
     def delete(self):
@@ -356,18 +356,18 @@ class ShortStudentSerializer(serializers.ModelSerializer):
 
 class CreateStudentSerializer(StudentSerializer):
     name = serializers.CharField(required=True)
-    parent = serializers.CharField(required=True)
+    client = serializers.CharField(required=True)
     age = serializers.IntegerField(required=True)
     email = serializers.CharField(required=False)
     phone = serializers.CharField(required=False)
     language = serializers.CharField(required=False)
     location = serializers.CharField(required=False)
     medical_condition = serializers.CharField(required=False)
-    parent_email = serializers.CharField(required=False)
-    parent_phone = serializers.CharField(required=False)
-    parent_cost = serializers.IntegerField(required=False)
-    parent_payment = serializers.CharField(required=False)
-    parent_name = serializers.CharField(required=False)
+    client_email = serializers.CharField(required=False)
+    client_phone = serializers.CharField(required=False)
+    client_cost = serializers.IntegerField(required=False)
+    client_payment = serializers.CharField(required=False)
+    client_name = serializers.CharField(required=False)
     notes = serializers.CharField(required=False)
 
     class Meta:
@@ -375,19 +375,19 @@ class CreateStudentSerializer(StudentSerializer):
         fields = (
             'identifier',
             'name',
-            'parent',
+            'client',
             'age',
             'email',
             'phone',
             'location',
             'language',
             'medical_condition',
-            'current_pathway',
-            'parent_name',
-            'parent_payment',
-            'parent_cost',
-            'parent_phone',
-            'parent_email',
+            'current_club',
+            'client_name',
+            'client_payment',
+            'client_cost',
+            'client_phone',
+            'client_email',
             'notes',
         )
         read_only_fields = (
@@ -401,10 +401,10 @@ class CreateStudentSerializer(StudentSerializer):
     def create(self, validated_data):
         # pathway = validated_data.get('pathways')
 
-        parent = Parent.objects.create(
+        client = Client.objects.create(
                 name=validated_data['name'],
-                email=validated_data.get('parent_email'),
-                phone=validated_data.get('parent_phone'),
+                email=validated_data.get('client_email'),
+                phone=validated_data.get('client_phone'),
                 )
 
         student = Student.objects.create(
@@ -412,8 +412,8 @@ class CreateStudentSerializer(StudentSerializer):
                 age=validated_data.get('age'),
                 email=validated_data.get('email'),
                 phone=validated_data.get('phone'),
-                parent=parent,
-                current_pathway=validated_data.get('current_pathway'),
+                client=client,
+                current_club=validated_data.get('current_club'),
                 location=validated_data.get('location'),
                 medical_condition=validated_data.get('medical_condition'),
                 notes=validated_data.get('notes'),
@@ -495,7 +495,7 @@ class StudentBookingSerializer(serializers.ModelSerializer):
     location = serializers.CharField()
     student = StudentSerializer()
     location = serializers.CharField()
-    pathway = serializers.CharField()
+    club = serializers.CharField()
 
     class Meta:
         model = Booking
@@ -514,7 +514,7 @@ class CreateStudentBookingSerializer(serializers.ModelSerializer):
     location = serializers.CharField()
     student = serializers.CharField()
     date = serializers.CharField()
-    pathway = serializers.CharField()
+    club = serializers.CharField()
     #teacher = serializers.CharField()
 
     class Meta:
@@ -523,7 +523,7 @@ class CreateStudentBookingSerializer(serializers.ModelSerializer):
             'location',
             'student',
             'date',
-            'pathway',
+            'club',
             #'teacher',
         )
 
@@ -548,7 +548,7 @@ class CreateStudentBookingSerializer(serializers.ModelSerializer):
                 student=validated_data['student'],
                 location=validated_data.get('location'),
                 date=validated_data.get('date'),
-                pathway=validated_data.get('pathway'),
+                club=validated_data.get('club'),
                 )
 
         return booking

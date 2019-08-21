@@ -127,14 +127,14 @@ class Student(DateModel):
     #hours_spent = models.IntegerField()
     location = models.CharField(max_length=50, db_index=True, blank=True)
     medical_condition = models.CharField(max_length=100, db_index=True, blank=True, null=True)
-    parent = models.ForeignKey('skyrock.Parent')
+    client = models.ForeignKey('skyrock.Client')
     notes = models.CharField(max_length=200, db_index=True, blank=True)
     badges = models.ManyToManyField('skyrock.Badge', blank=True)
-    current_pathway = models.CharField(max_length=200, db_index=True, blank=True)
+    current_club = models.CharField(max_length=200, db_index=True, blank=True)
 
 
 
-class Parent(DateModel):
+class Client(DateModel):
     identifier = models.UUIDField(unique=True, db_index=True,
         default=uuid.uuid4)
     name = models.CharField(max_length=50, db_index=True, blank=True)
@@ -147,7 +147,7 @@ class Attendance(DateModel):
     identifier = models.UUIDField(unique=True, db_index=True,
         default=uuid.uuid4)
     student = models.ForeignKey('skyrock.Student')
-    pathway = models.CharField(max_length=50, db_index=True, blank=True)
+    club = models.CharField(max_length=50, db_index=True, blank=True)
     status = EnumField(
                 Attendance_status, 
                 max_length=50,
@@ -156,7 +156,7 @@ class Attendance(DateModel):
 
 class Program(DateModel):
     student = models.ForeignKey('skyrock.Student')
-    pathway = models.ForeignKey('skyrock.Pathway', blank=True)
+    club = models.ForeignKey('skyrock.Club', blank=True)
     hours = models.IntegerField()
     location = EnumField(
                 Location, 
@@ -166,7 +166,7 @@ class Program(DateModel):
     teacher = models.CharField(max_length=50, db_index=True, blank=True)
 
 
-class Pathway(DateModel):
+class Club(DateModel):
     identifier = models.UUIDField(unique=True, db_index=True,
         default=uuid.uuid4)
     name = models.CharField(max_length=50, db_index=True, blank=True)
@@ -181,9 +181,9 @@ class Sale(DateModel):
                 Location, 
                 max_length=50)
     amount = models.IntegerField()
-    parent = models.ForeignKey('skyrock.Parent')
+    client = models.ForeignKey('skyrock.Client')
     description = models.CharField(max_length=200, blank=True)
-    pathway = models.ForeignKey('skyrock.Pathway')
+    club = models.ForeignKey('skyrock.Club')
 
 
 class Booking(DateModel):
@@ -192,7 +192,7 @@ class Booking(DateModel):
     location = models.CharField(max_length=100)
     student = models.ForeignKey('skyrock.Student')
     date = models.DateTimeField()
-    pathway = models.CharField(max_length=100)
+    club = models.CharField(max_length=100)
     #teacher = models.CharField(max_length=100)
 
 

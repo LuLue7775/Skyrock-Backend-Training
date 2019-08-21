@@ -61,7 +61,7 @@ def root(request, format=None):
                 ('Student', reverse('skyrock:user-student-view',
                     request=request,
                     format=format)),
-                ('Parent', reverse('skyrock:user-parents-view',
+                ('Client', reverse('skyrock:user-parents-view',
                     request=request,
                     format=format)),
                     
@@ -270,18 +270,18 @@ class VerifyEmailView(GenericAPIView):
         return Response({'status': 'success'})
 
 
-class AdminPathwayCreateView(ListAPIView):
+class AdminClubCreateView(ListAPIView):
     allowed_methods = ('GET','POST')
     #authentication_classes = (AdminAuthentication,)
-    serializer_class = PathwaySerializer    
+    serializer_class = ClubSerializer    
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
-            return CreatePathwaySerializer
+            return CreateClubSerializer
         return super().get_serializer_class()
 
     def get_queryset(self):
-        return Pathway.objects.filter(
+        return Club.objects.filter(
         ).order_by('-created')
 
     def post(self, request, *args, **kwargs):
@@ -289,56 +289,56 @@ class AdminPathwayCreateView(ListAPIView):
         serializer.is_valid(raise_exception=True)
         instance = serializer.save()
         return Response(
-            {'status': 'success', 'data': PathwaySerializer(instance).data},
+            {'status': 'success', 'data': ClubSerializer(instance).data},
             status=status.HTTP_201_CREATED
         )
 
 
-class AdminPathwayView(GenericAPIView):
+class AdminClubView(GenericAPIView):
     allowed_methods = ('GET','PATCH', 'DELETE')
     #authentication_classes = (AdminAuthentication,)
-    serializer_class = PathwaySerializer  
+    serializer_class = ClubSerializer  
 
     def delete(self, request, *args, **kwargs):
         try:
-            pathway = Pathway.objects.get(
+            club = Club.objects.get(
                 identifier=kwargs['id']
             )
-        except Pathway.DoesNotExist:
+        except Club.DoesNotExist:
             raise exceptions.NotFound()
 
-        serializer = self.get_serializer(pathway)
+        serializer = self.get_serializer(club)
         instance = serializer.delete()
         return Response({'status': 'success'})
 
     def get(self, request, *args, **kwargs):
         try:
-            pathway = Pathway.objects.get(
+            club = Club.objects.get(
                 identifier=str(kwargs['id']),
             )
-        except Pathway.DoesNotExist:
+        except Club.DoesNotExist:
             raise exceptions.NotFound()
 
-        serializer = self.get_serializer(pathway)
+        serializer = self.get_serializer(club)
         return Response({'status': 'success', 'data': serializer.data})
 
     def patch(self, request, *args, **kwargs):
         try:
-            pathway = Pathway.objects.get(
+            club = Club.objects.get(
                 identifier=kwargs['id'],
             )
-        except Pathway.DoesNotExist:
+        except Club.DoesNotExist:
             raise exceptions.NotFound()
 
         serializer = self.get_serializer(
-            Pathway, 
+            Club, 
             data=request.data,
             partial=True)
         serializer.is_valid(raise_exception=True)
         instance = serializer.save()
         return Response(
             {'status': 'success',
-             'data': PathwaySerializer(instance).data}
+             'data': ClubSerializer(instance).data}
         )
 
 
@@ -696,10 +696,10 @@ class AdminStudentBookingView(GenericAPIView):
         )
 
 
-class AdminParentCreateView(ListAPIView):
+class AdminClientCreateView(ListAPIView):
     allowed_methods = ('GET','POST')
     #authentication_classes = (AdminAuthentication,)
-    serializer_class = ParentSerializer    
+    serializer_class = ClientSerializer    
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -707,7 +707,7 @@ class AdminParentCreateView(ListAPIView):
         return super().get_serializer_class()
 
     def get_queryset(self):
-        return Parent.objects.filter(
+        return Client.objects.filter(
         ).order_by('-created')
 
     def post(self, request, *args, **kwargs):
@@ -715,54 +715,54 @@ class AdminParentCreateView(ListAPIView):
         serializer.is_valid(raise_exception=True)
         instance = serializer.save()
         return Response(
-            {'status': 'success', 'data': ParentSerializer(instance).data},
+            {'status': 'success', 'data': ClientSerializer(instance).data},
             status=status.HTTP_201_CREATED
         )
 
 
-class AdminParentView(GenericAPIView):
+class AdminClientView(GenericAPIView):
     allowed_methods = ('GET','PATCH', 'DELETE')
     #authentication_classes = (AdminAuthentication,)
-    serializer_class = ParentSerializer  
+    serializer_class = ClientSerializer  
 
     def delete(self, request, *args, **kwargs):
         try:
-            parent = Parent.objects.get(
+            client = Client.objects.get(
                 identifier=kwargs['id']
             )
-        except Parent.DoesNotExist:
+        except Client.DoesNotExist:
             raise exceptions.NotFound()
 
-        serializer = self.get_serializer(parent)
+        serializer = self.get_serializer(client)
         instance = serializer.delete()
         return Response({'status': 'success'})
 
     def get(self, request, *args, **kwargs):
         try:
-            parent = Parent.objects.get(
+            client = Client.objects.get(
                 identifier=str(kwargs['id']),
             )
-        except Parent.DoesNotExist:
+        except Client.DoesNotExist:
             raise exceptions.NotFound()
 
-        serializer = self.get_serializer(parent)
+        serializer = self.get_serializer(client)
         return Response({'status': 'success', 'data': serializer.data})
 
     def patch(self, request, *args, **kwargs):
         try:
-            parent = Student.objects.get(
+            client = Student.objects.get(
                 identifier=kwargs['id'],
             )
-        except Parent.DoesNotExist:
+        except Client.DoesNotExist:
             raise exceptions.NotFound()
 
         serializer = self.get_serializer(
-            Parent, 
+            Client, 
             data=request.data,
             partial=True)
         serializer.is_valid(raise_exception=True)
         instance = serializer.save()
         return Response(
             {'status': 'success',
-             'data': ParentSerializer(instance).data}
+             'data': ClientSerializer(instance).data}
         )
