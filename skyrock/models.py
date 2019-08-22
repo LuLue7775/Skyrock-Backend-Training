@@ -119,28 +119,25 @@ class User(AbstractUser, DateModel):
 class Student(DateModel):
     identifier = models.UUIDField(unique=True, db_index=True,
         default=uuid.uuid4)
-    name = models.CharField(max_length=50, db_index=True, blank=True)
-    age = models.IntegerField()
-    email = models.EmailField(_('email address'), null=True)
-    phone = models.CharField(max_length=50, db_index=True, blank=True)
-    #hours_remaining = models.IntegerField()
-    #hours_spent = models.IntegerField()
-    location = models.CharField(max_length=50, db_index=True, blank=True)
+    first_name = models.CharField(max_length=50, db_index=True, blank=True)
+    last_name = models.CharField(max_length=50, db_index=True, blank=True)
+    birth_date = models.DateField(blank=True, null=True)
     medical_condition = models.CharField(max_length=100, db_index=True, blank=True, null=True)
     client = models.ForeignKey('skyrock.Client')
-    notes = models.CharField(max_length=200, db_index=True, blank=True)
-    badges = models.ManyToManyField('skyrock.Badge', blank=True)
-    current_club = models.CharField(max_length=200, db_index=True, blank=True)
-
+    language = models.CharField(max_length=200, db_index=True, blank=True)
+    #clubs = models.ManyToManyField('skyrock.Club')
 
 
 class Client(DateModel):
     identifier = models.UUIDField(unique=True, db_index=True,
         default=uuid.uuid4)
-    name = models.CharField(max_length=50, db_index=True, blank=True)
+    first_name = models.CharField(max_length=50, db_index=True, blank=True)
+    last_name = models.CharField(max_length=50, db_index=True, blank=True)
+    location = models.CharField(max_length=50, db_index=True, blank=True)
+    language = models.CharField(max_length=50, db_index=True, blank=True)
     email = models.EmailField(_('email address'), null=True)
     phone = models.CharField(max_length=50, db_index=True, blank=True)
-    payment_status = models.CharField(max_length=200, blank=True)
+    #student = models.ManyToManyField('skyrock.Student', blank=True)
     
 
 class Attendance(DateModel):
@@ -153,6 +150,7 @@ class Attendance(DateModel):
                 max_length=50,
                 default=Attendance_status.PRESENT)
     date =  models.DateTimeField(default=now)
+
 
 class Program(DateModel):
     student = models.ForeignKey('skyrock.Student')
@@ -171,7 +169,8 @@ class Club(DateModel):
         default=uuid.uuid4)
     name = models.CharField(max_length=50, db_index=True, blank=True)
     description = models.CharField(max_length=200, blank=True)
-    
+    badges = models.ManyToManyField('skyrock.Badge', blank=True)
+    student = models.ForeignKey('skyrock.Student')
 
 
 class Sale(DateModel):

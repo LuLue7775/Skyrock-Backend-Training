@@ -285,56 +285,6 @@ class StudentClubSerializer(serializers.ModelSerializer):
         self.instance.delete()
 
 
-class ClientSerializer(serializers.ModelSerializer):
-    identifier = serializers.UUIDField(read_only=True)
-    email = serializers.CharField()
-    phone = serializers.IntegerField()
-    name = serializers.CharField(required=False)
-
-    class Meta:
-        model = Client
-        fields = (
-            'identifier',
-            'name',
-            'email',
-            'phone',
-        )
-
-    def delete(self):
-        self.instance.delete()
-
-
-class StudentSerializer(serializers.ModelSerializer):
-    #pathways = PathwaySerializer(many=True)
-    client = ClientSerializer()
-    age = serializers.IntegerField()
-    email = serializers.CharField()
-    phone = serializers.CharField()
-    current_club =  ClubSerializer()
-    notes = serializers.CharField()
-    location = serializers.CharField()
-    medical_condition = serializers.CharField()
-
-    class Meta:
-        model = Student
-        fields = (
-            'identifier',
-            'name',
-            #'pathways',
-            'client',
-            'age',
-            'email',
-            'phone',
-            'current_club',
-            'notes',
-            'location',
-            'medical_condition',
-        )
-
-    def delete(self):
-        self.instance.delete()
-
-
 class ShortStudentSerializer(serializers.ModelSerializer):
    
     class Meta:
@@ -354,41 +304,50 @@ class ShortStudentSerializer(serializers.ModelSerializer):
         self.instance.delete()
 
 
-class CreateStudentSerializer(StudentSerializer):
-    name = serializers.CharField(required=True)
-    client = serializers.CharField(required=True)
-    age = serializers.IntegerField(required=True)
-    email = serializers.CharField(required=False)
+class ClientSerializer(serializers.ModelSerializer):
+    first_name = serializers.CharField(required=True)
+    last_name = serializers.CharField(required=True)
+    email = serializers.CharField(required=True)
     phone = serializers.CharField(required=False)
     language = serializers.CharField(required=False)
     location = serializers.CharField(required=False)
-    medical_condition = serializers.CharField(required=False)
-    client_email = serializers.CharField(required=False)
-    client_phone = serializers.CharField(required=False)
-    client_cost = serializers.IntegerField(required=False)
-    client_payment = serializers.CharField(required=False)
-    client_name = serializers.CharField(required=False)
-    notes = serializers.CharField(required=False)
+    #student = Student.objects.filter(client= self.identifier)
 
     class Meta:
-        model = StudentSerializer.Meta.model
+        model = Client
         fields = (
             'identifier',
-            'name',
-            'client',
-            'age',
+            'first_name',
+            'last_name',
             'email',
             'phone',
             'location',
             'language',
-            'medical_condition',
-            'current_club',
-            'client_name',
-            'client_payment',
-            'client_cost',
-            'client_phone',
-            'client_email',
-            'notes',
+        )
+        
+
+    def delete(self):
+        self.instance.delete()
+
+
+class CreateClientSerializer(ClientSerializer):
+    first_name = serializers.CharField(required=True)
+    last_name = serializers.CharField(required=True)
+    email = serializers.CharField(required=True)
+    phone = serializers.CharField(required=False)
+    language = serializers.CharField(required=False)
+    location = serializers.CharField(required=False)
+
+    class Meta:
+        model = ClientSerializer.Meta.model
+        fields = (
+            'identifier',
+            'first_name',
+            'last_name',
+            'email',
+            'phone',
+            'location',
+            'language',
         )
         read_only_fields = (
             'identifier',
@@ -399,33 +358,94 @@ class CreateStudentSerializer(StudentSerializer):
         return validated_data
 
     def create(self, validated_data):
-        # pathway = validated_data.get('pathways')
 
         client = Client.objects.create(
-                name=validated_data['name'],
-                email=validated_data.get('client_email'),
-                phone=validated_data.get('client_phone'),
-                )
-
-        student = Student.objects.create(
-                name=validated_data['name'],
-                age=validated_data.get('age'),
+                first_name=validated_data['first_name'],
+                last_name=validated_data['last_name'],
                 email=validated_data.get('email'),
                 phone=validated_data.get('phone'),
-                client=client,
-                current_club=validated_data.get('current_club'),
                 location=validated_data.get('location'),
-                medical_condition=validated_data.get('medical_condition'),
-                notes=validated_data.get('notes'),
+                language=validated_data.get('language'),
+
                 )
 
-        # for item in pathway:   
-        #     try:
-        #         project = Pathway.objects.get(identifier=item)
-        #     except Pathway.DoesNotExist:
-        #         raise serializers.ValidationError(
-        #             {"project": ["The pathway does not exist."]})
-        #     student.pathways.add(project)
+
+        return client
+
+
+class StudentSerializer(serializers.ModelSerializer):
+    #clubs = ClubSerializer(many=True)
+    first_name = serializers.CharField(required=True)
+    last_name = serializers.CharField(required=True)
+    client = ClientSerializer()
+    birth_date = serializers.DateField()
+    language = serializers.CharField()
+    # notes = serializers.CharField()
+    medical_condition = serializers.CharField()
+
+    class Meta:
+        model = Student
+        fields = (
+            'identifier',
+            'first_name',
+            'last_name',
+            # 'clubs',
+            'client',
+            'birth_date',
+            # 'notes',
+            'language',
+            'medical_condition',
+        )
+
+    def delete(self):
+        self.instance.delete()
+
+
+class CreateStudentSerializer(StudentSerializer):
+    first_name = serializers.CharField(required=True)
+    last_name = serializers.CharField(required=True)
+    client = serializers.CharField()
+    birth_date = serializers.DateField()
+    language = serializers.CharField()
+    # notes = serializers.CharField()
+    medical_condition = serializers.CharField()
+
+    class Meta:
+        model = StudentSerializer.Meta.model
+        fields = (
+            'identifier',
+            'first_name',
+            'last_name',
+            'client',
+            'birth_date',
+            # 'notes',
+            'language',
+            'medical_condition',
+        )
+        read_only_fields = (
+            'identifier',
+        )
+
+    def validate(self, validated_data):
+        validated_data['user'] = self.context['request'].user
+        return validated_data
+
+    def create(self, validated_data):
+        try:
+            client = Client.objects.get(
+                identifier=validated_data['client'],
+                )
+        except Client.DoesNotExist:
+            raise exceptions.NotFound()
+
+        student = Student.objects.create(
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name'],
+            birth_date=validated_data.get('birth_date'),
+            client=client,
+            medical_condition=validated_data.get('medical_condition'),
+            language=validated_data.get('language'),
+            )
 
         return student
 

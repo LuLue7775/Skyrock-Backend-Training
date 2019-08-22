@@ -61,7 +61,7 @@ def root(request, format=None):
                 ('Student', reverse('skyrock:user-student-view',
                     request=request,
                     format=format)),
-                ('Client', reverse('skyrock:user-parents-view',
+                ('Client', reverse('skyrock:user-parent-view',
                     request=request,
                     format=format)),
                     
@@ -403,7 +403,7 @@ class AdminStudentView(GenericAPIView):
             raise exceptions.NotFound()
 
         serializer = self.get_serializer(
-            Student, 
+            student, 
             data=request.data,
             partial=True)
         serializer.is_valid(raise_exception=True)
@@ -703,7 +703,7 @@ class AdminClientCreateView(ListAPIView):
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
-            return CreateStudentSerializer
+            return CreateClientSerializer
         return super().get_serializer_class()
 
     def get_queryset(self):
@@ -750,18 +750,20 @@ class AdminClientView(GenericAPIView):
 
     def patch(self, request, *args, **kwargs):
         try:
-            client = Student.objects.get(
+            client = Client.objects.get(
                 identifier=kwargs['id'],
             )
+
         except Client.DoesNotExist:
             raise exceptions.NotFound()
 
         serializer = self.get_serializer(
-            Client, 
+            client, 
             data=request.data,
             partial=True)
         serializer.is_valid(raise_exception=True)
         instance = serializer.save()
+        print('kay')
         return Response(
             {'status': 'success',
              'data': ClientSerializer(instance).data}
