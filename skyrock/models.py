@@ -123,7 +123,7 @@ class Student(DateModel):
     last_name = models.CharField(max_length=50, db_index=True, blank=True)
     birth_date = models.DateField(blank=True, null=True)
     medical_condition = models.CharField(max_length=100, db_index=True, blank=True, null=True)
-    client = models.ForeignKey('skyrock.Client')
+    client = models.ForeignKey('skyrock.Client', on_delete = models.CASCADE, related_name="student")
     language = models.CharField(max_length=200, db_index=True, blank=True)
     #clubs = models.ManyToManyField('skyrock.Club')
 
@@ -170,7 +170,7 @@ class Club(DateModel):
     name = models.CharField(max_length=50, db_index=True, blank=True)
     description = models.CharField(max_length=200, blank=True)
     badges = models.ManyToManyField('skyrock.Badge', blank=True)
-    student = models.ForeignKey('skyrock.Student')
+    student = models.ForeignKey('skyrock.Student', on_delete = models.CASCADE, related_name="clubs")
 
 
 class Sale(DateModel):

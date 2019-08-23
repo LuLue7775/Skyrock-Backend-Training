@@ -52,7 +52,7 @@ def root(request, format=None):
                 ('Password Reset', reverse('skyrock:user-password-reset',
                     request=request,
                     format=format)),
-                ('Course', reverse('skyrock:user-course-view',
+                ('Course', reverse('skyrock:user-club-view',
                     request=request,
                     format=format)),
                 ('Booking', reverse('skyrock:user-booking-view',
@@ -282,9 +282,11 @@ class AdminClubCreateView(ListAPIView):
 
     def get_queryset(self):
         return Club.objects.filter(
+            identifier=self.kwargs['id']
         ).order_by('-created')
 
     def post(self, request, *args, **kwargs):
+        request.data['student'] = kwargs['id']
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         instance = serializer.save()
@@ -302,7 +304,7 @@ class AdminClubView(GenericAPIView):
     def delete(self, request, *args, **kwargs):
         try:
             club = Club.objects.get(
-                identifier=kwargs['id']
+                identifier=kwargs['club']
             )
         except Club.DoesNotExist:
             raise exceptions.NotFound()
@@ -314,7 +316,7 @@ class AdminClubView(GenericAPIView):
     def get(self, request, *args, **kwargs):
         try:
             club = Club.objects.get(
-                identifier=str(kwargs['id']),
+                identifier=str(kwargs['club']),
             )
         except Club.DoesNotExist:
             raise exceptions.NotFound()
@@ -325,13 +327,13 @@ class AdminClubView(GenericAPIView):
     def patch(self, request, *args, **kwargs):
         try:
             club = Club.objects.get(
-                identifier=kwargs['id'],
+                identifier=kwargs['club'],
             )
         except Club.DoesNotExist:
             raise exceptions.NotFound()
 
         serializer = self.get_serializer(
-            Club, 
+            club, 
             data=request.data,
             partial=True)
         serializer.is_valid(raise_exception=True)
@@ -371,6 +373,11 @@ class AdminStudentView(GenericAPIView):
     #authentication_classes = (AdminAuthentication,)
     serializer_class = StudentSerializer  
 
+    # def get_serializer_class(self):
+    #     if self.request.method == 'GET':
+    #         return StudentClubSerializer
+    #     return super().get_serializer_class()
+
     def delete(self, request, *args, **kwargs):
         try:
             student = Student.objects.get(
@@ -392,7 +399,7 @@ class AdminStudentView(GenericAPIView):
             raise exceptions.NotFound()
 
         serializer = self.get_serializer(student)
-        return Response({'status': 'success', 'data': serializer.data})
+        return Response({'status': 'success', 'data': serializer.data })
 
     def patch(self, request, *args, **kwargs):
         try:
