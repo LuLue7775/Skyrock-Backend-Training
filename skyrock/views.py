@@ -58,13 +58,12 @@ def root(request, format=None):
                 ('Booking', reverse('skyrock:user-booking-view',
                     request=request,
                     format=format)),
-                ('Student', reverse('skyrock:user-student-view',
+                ('Student', reverse('skyrock:admin-student-view',
                     request=request,
                     format=format)),
                 ('Client', reverse('skyrock:user-parent-view',
                     request=request,
                     format=format)),
-                    
                     
             ])},
         ])
@@ -719,7 +718,6 @@ class StudentBookingListView(ListAPIView):
         )
 
 
-
 class AdminClientCreateView(ListAPIView):
     allowed_methods = ('GET','POST')
     #authentication_classes = (AdminAuthentication,)
@@ -738,6 +736,19 @@ class AdminClientCreateView(ListAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         instance = serializer.save()
+
+        from django.core.mail import send_mail
+        from django.contrib.sites.shortcuts import get_current_site
+
+        current_site = get_current_site(self.request)
+        url = None
+        context = {"current_site": current_site,
+                       "user": instance,
+                       "password_reset_url": url,
+                       "request": self.request}
+
+        get_adapter(self.request).send_mail('account/email/email_confirm',instance.email,context)
+
         return Response(
             {'status': 'success', 'data': ClientSerializer(instance).data},
             status=status.HTTP_201_CREATED
@@ -791,4 +802,107 @@ class AdminClientView(GenericAPIView):
         return Response(
             {'status': 'success',
              'data': ClientSerializer(instance).data}
+        )
+
+
+class UserClientView(GenericAPIView):
+    allowed_methods = ('GET','PATCH', 'DELETE')
+    #authentication_classes = (AdminAuthentication,)
+    serializer_class = ClientSerializer  
+
+    def delete(self, request, *args, **kwargs):
+        try:
+            client = Client.objects.get(
+                identifier=kwargs['id']
+            )
+        except Client.DoesNotExist:
+            raise exceptions.NotFound()
+
+        serializer = self.get_serializer(client)
+        instance = serializer.delete()
+        return Response({'status': 'success'})
+
+    def get(self, request, *args, **kwargs):
+        try:
+            client = Client.objects.get(
+                identifier=str(kwargs['id']),
+            )
+        except Client.DoesNotExist:
+            raise exceptions.NotFound()
+
+        serializer = self.get_serializer(client)
+        return Response({'status': 'success', 'data': serializer.data})
+
+    def patch(self, request, *args, **kwargs):
+        try:
+            client = Client.objects.get(
+                identifier=kwargs['id'],
+            )
+
+        except Client.DoesNotExist:
+            raise exceptions.NotFound()
+
+        serializer = self.get_serializer(
+            client, 
+            data=request.data,
+            partial=True)
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save()
+        print('kay')
+        return Response(
+            {'status': 'success',
+             'data': ClientSerializer(instance).data}
+        )
+
+
+class UserStudentView(GenericAPIView):
+    allowed_methods = ('GET','PATCH', 'DELETE')
+    #authentication_classes = (AdminAuthentication,)
+    serializer_class = StudentSerializer  
+
+    # def get_serializer_class(self):
+    #     if self.request.method == 'GET':
+    #         return StudentClubSerializer
+    #     return super().get_serializer_class()
+
+    def delete(self, request, *args, **kwargs):
+        try:
+            student = Student.objects.get(
+                identifier=kwargs['id']
+            )
+        except Student.DoesNotExist:
+            raise exceptions.NotFound()
+
+        serializer = self.get_serializer(student)
+        instance = serializer.delete()
+        return Response({'status': 'success'})
+
+    def get(self, request, *args, **kwargs):
+        try:
+            student = Student.objects.get(
+                identifier=str(kwargs['id']),
+            )
+        except Student.DoesNotExist:
+            raise exceptions.NotFound()
+
+        serializer = self.get_serializer(student)
+        return Response({'status': 'success', 'data': serializer.data })
+
+    def patch(self, request, *args, **kwargs):
+        try:
+            student = Student.objects.get(
+                identifier=kwargs['id'],
+            )
+        except Student.DoesNotExist:
+            raise exceptions.NotFound()
+
+        serializer = self.get_serializer(
+            student, 
+            data=request.data,
+            partial=True)
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save()
+        return Response(
+            {'status': 'success',
+             'data': StudentSerializer(instance).data}
         )

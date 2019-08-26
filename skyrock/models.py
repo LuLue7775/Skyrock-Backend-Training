@@ -91,6 +91,7 @@ class AbstractUser(AbstractBaseUser, PermissionsMixin):
                 Role, 
                 max_length=50,
                 default=Role.STUDENT)
+    client = models.ForeignKey('skyrock.Client', on_delete = models.CASCADE, related_name="user", blank=True, null=True)
 
     USERNAME_FIELD = 'email'
 

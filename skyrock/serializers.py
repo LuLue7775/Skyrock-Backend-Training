@@ -10,6 +10,7 @@ from allauth.account.utils import setup_user_email
 from allauth.account.models import EmailAddress
 from allauth.account import app_settings
 from rest_framework import serializers
+
 from rest_framework.serializers import ModelSerializer
 from django.db import transaction
 from django.contrib.auth import authenticate
@@ -39,162 +40,6 @@ class DateSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_updated(obj):
         return int(obj.updated.timestamp() * 1000)
-
-
-class UserSerializer(DateSerializer):
-    role = serializers.ChoiceField(
-        required=False,
-        source='role.value',
-        choices=Role.choices())
-    
-    class Meta:
-        model = User
-        fields = ('first_name', 'last_name', 'email', 'created', 'updated', 'role')
-        read_only_field = ('created', 'updated',)
-
-    def validate(self, validated_data):
-        return validated_data
-
-
-class TokenSerializer(serializers.Serializer):
-    token = serializers.CharField()
-    user = UserSerializer()
-
-
-class RegisterSerializer(serializers.Serializer):
-    email = serializers.EmailField()
-    first_name = serializers.CharField(required=False, allow_blank=True,
-        max_length=50, write_only=True)
-    last_name = serializers.CharField(required=False, allow_blank=True,
-        max_length=50, write_only=True)
-    password1 = serializers.CharField(required=True, write_only=True,
-        max_length=128, style={'input_type': 'password'})
-    password2 = serializers.CharField(required=True, write_only=True,
-        max_length=128, style={'input_type': 'password'})
-    role = serializers.ChoiceField(
-        required=False,
-        choices=Role.choices())
-
-    def validate_email(self, email):
-        return get_adapter().clean_email(email)
-
-    def validate_password1(self, password):
-        return get_adapter().clean_password(password)
-
-    def validate(self, data):
-        email = data.get('email')
-        password1 = data.get('password1')
-        password2 = data.get('password2')
-
-        if password1 != password2:
-            raise serializers.ValidationError(
-                {"non_field_errors": [
-                    _("The two password fields don't match.")]})
-
-        # Further email address validation related to the company.
-        if EmailAddress.objects.filter(email__iexact=email).exists():
-            raise serializers.ValidationError(
-                {"email": [_("A user is already registered "
-                             "with this email address.")]})
-
-
-        return data
-
-    def save(self, request):
-        adapter = get_adapter()
-        user = adapter.new_user(request)
-        self.cleaned_data = self.validated_data
-        adapter.save_user(request, user, self)
-        setup_user_email(request, user, [])
-        user.role = request.data['role']
-        user.save()
-        
-        return user
-
-
-class LoginSerializer(serializers.Serializer):
-    email = serializers.CharField(required=True, allow_blank=False)
-    password = serializers.CharField(max_length=128,
-        style={'input_type': 'password'})
-
-    def _validate_user(self, email, password):
-        user = None
-
-        if email and password:
-            user = authenticate(email=email, password=password)
-        else:
-            raise serializers.ValidationError(
-                {"non_field_errors": [
-                    _('Must include "email" and "password".')
-                ]}
-            )
-
-        return  user
-
-    def validate(self, attrs):
-        email = attrs.get('email')
-        password = attrs.get('password')
-        user = self._validate_user(email, password)
-
-        if user:
-            if not user.is_active:
-                raise serializers.ValidationError(
-                    {"non_field_errors": [_('User account is disabled.')]})
-        else:
-            raise serializers.ValidationError(
-                {"non_field_errors": [
-                    _('Unable to log in with provided credentials.')
-                ]})
-
-        # If required, is the email verified?
-        if 'rest_auth.registration' in settings.INSTALLED_APPS:
-            if (app_settings.EMAIL_VERIFICATION
-                    == app_settings.EmailVerificationMethod.MANDATORY):
-                email_address = user.emailaddress_set.get(email=user.email)
-                if not email_address.verified:
-                    raise serializers.ValidationError(
-                        {"user": [_('Email is not verified.')]})
-
-        attrs['user'] = user
-        return attrs
-
-
-class LogoutSerializer(serializers.Serializer):
-    pass
-
-
-class PasswordChangeSerializer(DefaultPasswordChangeSerializer):
-    """
-    Override the default serializer in order to mask the password fields.
-    """
-    old_password = serializers.CharField(
-        max_length=128, style={'input_type': 'password'})
-    new_password1 = serializers.CharField(
-        max_length=128, style={'input_type': 'password'})
-    new_password2 = serializers.CharField(
-        max_length=128, style={'input_type': 'password'})
-
-
-class PasswordResetSerializer(DefaultPasswordResetSerializer):
-    password_reset_form_class = PasswordResetForm
-
-
-class PasswordResetConfirmSerializer(DefaultPasswordResetConfirmSerializer):
-    """
-    Override the default serializer in order to mask the password fields.
-    """
-    new_password1 = serializers.CharField(
-        max_length=128, style={'input_type': 'password'})
-    new_password2 = serializers.CharField(
-        max_length=128, style={'input_type': 'password'})
-
-
-class ResendVerifyEmailSerializer(serializers.Serializer):
-    email = serializers.CharField(required=True)
-
-
-class VerifyEmailSerializer(serializers.Serializer):
-    key = serializers.CharField(required=True)
 
 
 class BadgeSerializer(serializers.ModelSerializer):
@@ -564,7 +409,21 @@ class CreateClientSerializer(ClientSerializer):
                 language=validated_data.get('language'),
 
                 )
+        # try:
+        # from django.core.mail import send_mail
+        # from django.contrib.sites.shortcuts import get_current_site
 
+        # current_site = get_current_site(self.request)
+        # url = None
+        # context = {"current_site": current_site,
+        #                "user": client,
+        #                "password_reset_url": url,
+        #                "request": self.request}
+
+        # get_adapter(self.request).send_mail('account/email/email_confirm_message',client.email,context)
+        # except Exception as exc: 
+        #     raise exceptions.ValidationError({'non_field_errors':
+        #         ['Error sending the verification email.']})
 
         return client
 
@@ -706,3 +565,169 @@ class CreateStudentBookingSerializer(serializers.ModelSerializer):
                 )
         return booking
 
+
+class UserSerializer(DateSerializer):
+    role = serializers.ChoiceField(
+        required=False,
+        source='role.value',
+        choices=Role.choices())
+    client = ClientSerializer()
+    
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name', 'email', 'created', 'updated', 'role', 'client')
+        read_only_field = ('created', 'updated',)
+
+    def validate(self, validated_data):
+        return validated_data
+
+
+class TokenSerializer(serializers.Serializer):
+    token = serializers.CharField()
+    user = UserSerializer()
+
+
+class RegisterSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    first_name = serializers.CharField(required=False, allow_blank=True,
+        max_length=50, write_only=True)
+    last_name = serializers.CharField(required=False, allow_blank=True,
+        max_length=50, write_only=True)
+    password1 = serializers.CharField(required=True, write_only=True,
+        max_length=128, style={'input_type': 'password'})
+    password2 = serializers.CharField(required=True, write_only=True,
+        max_length=128, style={'input_type': 'password'})
+    role = serializers.ChoiceField(
+        required=False,
+        choices=Role.choices())
+    client = serializers.CharField(required=True,max_length=50)
+
+    def validate_email(self, email):
+        return get_adapter().clean_email(email)
+
+    def validate_password1(self, password):
+        return get_adapter().clean_password(password)
+
+    def validate(self, data):
+        email = data.get('email')
+        password1 = data.get('password1')
+        password2 = data.get('password2')
+
+        if password1 != password2:
+            raise serializers.ValidationError(
+                {"non_field_errors": [
+                    _("The two password fields don't match.")]})
+
+        # Further email address validation related to the company.
+        if EmailAddress.objects.filter(email__iexact=email).exists():
+            raise serializers.ValidationError(
+                {"email": [_("A user is already registered "
+                             "with this email address.")]})
+
+
+        return data
+
+    def save(self, request):
+        try:
+            client = Client.objects.get(
+                identifier=request.data['client'],
+                )
+        except Client.DoesNotExist:
+            raise exceptions.NotFound()
+
+        adapter = get_adapter()
+        user = adapter.new_user(request)
+        self.cleaned_data = self.validated_data
+        adapter.save_user(request, user, self)
+        setup_user_email(request, user, [])
+        user.role = request.data['role']
+        user.client = client
+
+        user.save()
+        
+        return user
+
+
+class LoginSerializer(serializers.Serializer):
+    email = serializers.CharField(required=True, allow_blank=False)
+    password = serializers.CharField(max_length=128,
+        style={'input_type': 'password'})
+
+    def _validate_user(self, email, password):
+        user = None
+
+        if email and password:
+            user = authenticate(email=email, password=password)
+        else:
+            raise serializers.ValidationError(
+                {"non_field_errors": [
+                    _('Must include "email" and "password".')
+                ]}
+            )
+
+        return  user
+
+    def validate(self, attrs):
+        email = attrs.get('email')
+        password = attrs.get('password')
+        user = self._validate_user(email, password)
+
+        if user:
+            if not user.is_active:
+                raise serializers.ValidationError(
+                    {"non_field_errors": [_('User account is disabled.')]})
+        else:
+            raise serializers.ValidationError(
+                {"non_field_errors": [
+                    _('Unable to log in with provided credentials.')
+                ]})
+
+        # If required, is the email verified?
+        if 'rest_auth.registration' in settings.INSTALLED_APPS:
+            if (app_settings.EMAIL_VERIFICATION
+                    == app_settings.EmailVerificationMethod.MANDATORY):
+                email_address = user.emailaddress_set.get(email=user.email)
+                if not email_address.verified:
+                    raise serializers.ValidationError(
+                        {"user": [_('Email is not verified.')]})
+
+        attrs['user'] = user
+        return attrs
+
+
+class LogoutSerializer(serializers.Serializer):
+    pass
+
+
+class PasswordChangeSerializer(DefaultPasswordChangeSerializer):
+    """
+    Override the default serializer in order to mask the password fields.
+    """
+    old_password = serializers.CharField(
+        max_length=128, style={'input_type': 'password'})
+    new_password1 = serializers.CharField(
+        max_length=128, style={'input_type': 'password'})
+    new_password2 = serializers.CharField(
+        max_length=128, style={'input_type': 'password'})
+
+
+class PasswordResetSerializer(DefaultPasswordResetSerializer):
+    password_reset_form_class = PasswordResetForm
+
+
+class PasswordResetConfirmSerializer(DefaultPasswordResetConfirmSerializer):
+    """
+    Override the default serializer in order to mask the password fields.
+    """
+    new_password1 = serializers.CharField(
+        max_length=128, style={'input_type': 'password'})
+    new_password2 = serializers.CharField(
+        max_length=128, style={'input_type': 'password'})
+
+
+class ResendVerifyEmailSerializer(serializers.Serializer):
+    email = serializers.CharField(required=True)
+
+
+class VerifyEmailSerializer(serializers.Serializer):
+    key = serializers.CharField(required=True)
