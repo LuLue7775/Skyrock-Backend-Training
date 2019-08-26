@@ -197,10 +197,74 @@ class VerifyEmailSerializer(serializers.Serializer):
     key = serializers.CharField(required=True)
 
 
+class BadgeSerializer(serializers.ModelSerializer):
+    identifier = serializers.UUIDField(read_only=True)
+
+    class Meta:
+        model = Badge
+        fields = (
+            'identifier',
+            'name',
+            'description',
+            'club_relation',
+        )
+
+    def delete(self):
+        self.instance.delete()
+
+
+class CreateBadgeSerializer(BadgeSerializer):
+    name = serializers.CharField(required=True)
+    description = serializers.CharField(required=True)
+    club_relation = serializers.CharField(required=True)
+
+    class Meta:
+        model = BadgeSerializer.Meta.model
+        fields = (
+            'identifier',
+            'name',
+            'description',
+            'club_relation',
+        )
+        read_only_fields = (
+            'identifier',
+        )
+
+    def validate(self, validated_data):
+        validated_data['user'] = self.context['request'].user
+        return validated_data
+
+    def create(self, validated_data):
+    
+        badge = Badge.objects.create(
+                name=validated_data['name'],
+                description=validated_data['description'],
+                club_relation = validated_data['club_relation']
+                )
+
+        return badge
+
+
 class ClubSerializer(serializers.ModelSerializer):
     identifier = serializers.UUIDField(read_only=True)
+    badges = BadgeSerializer(many=True)
+
+    class Meta:
+        model = Club
+        fields = (
+            'identifier',
+            'name',
+            'description',
+            'badges',
+        )
+
+    def delete(self):
+        self.instance.delete()
+
+
+class ShortClubSerializer(serializers.ModelSerializer):
+    identifier = serializers.UUIDField(read_only=True)
     #badges = BadgeSerializer(many=True)
-    # projects = ProjectSerializer(many=True)
 
     class Meta:
         model = Club
@@ -209,7 +273,6 @@ class ClubSerializer(serializers.ModelSerializer):
             'name',
             'description',
             #'badges',
-            # 'projects'
         )
 
     def delete(self):
@@ -235,13 +298,9 @@ class CreateClubSerializer(ClubSerializer):
 
     def validate(self, validated_data):
         validated_data['user'] = self.context['request'].user
-        # validated_data['color'] = self.validated_data.get('color')
         return validated_data
 
     def create(self, validated_data):
-        #colors = validated_data.get('colors')
-        #projects = validated_data.get('projects')
-
         try:
             student = Student.objects.get(
                 identifier=validated_data['student'],
@@ -249,32 +308,52 @@ class CreateClubSerializer(ClubSerializer):
         except Student.DoesNotExist:
             raise exceptions.NotFound()
 
-
         club = Club.objects.create(
                 name=validated_data['name'],
                 description=validated_data['description'],
                 student=student,
                 )
 
-        # for item in colors:
-        #     try:
-        #         color = Color.objects.get(identifier=item)
-        #     except Color.DoesNotExist:
-        #         raise serializers.ValidationError(
-        #             {"color": ["The color does not exist."]})
-        #     pathway.colors.add(color)
-
-        # for item in projects:    
-        #     try:
-        #         project = Project.objects.get(identifier=item)
-        #     except Project.DoesNotExist:
-        #         raise serializers.ValidationError(
-        #             {"project": ["The project does not exist."]})
-        #     pathway.projects.add(project)
-
         return club
 
 
+class AddBadgeSerializer(ClubSerializer):
+    badges = serializers.ListField()
+    club = serializers.CharField()
+
+    class Meta:
+        model = ClubSerializer.Meta.model
+        fields = (
+            'identifier',
+            'club',
+            'badges',
+        )
+        read_only_fields = (
+            'identifier',
+        )
+
+    def validate(self, validated_data):
+        validated_data['user'] = self.context['request'].user
+        return validated_data
+
+    def create(self, validated_data):
+        badges = validated_data.get('badges')
+        try:
+            club = Club.objects.get(
+                identifier=validated_data['club'],
+                )
+        except Club.DoesNotExist:
+            raise exceptions.NotFound()
+
+        for item in badges:
+            try:
+                badge = Badge.objects.get(identifier=item)
+            except Color.DoesNotExist:
+                raise serializers.ValidationError(
+                    {"badge": ["The badge does not exist."]})
+            club.badges.add(badge)
+
+        return club
 
 
 class ShortStudentSerializer(serializers.ModelSerializer):
@@ -283,13 +362,11 @@ class ShortStudentSerializer(serializers.ModelSerializer):
         model = Student
         fields = (
             'identifier',
-            'name',
-            'age',
-            'email',
-            'phone',
-            'hours',
-            'current_teacher',
-            'current_club'
+            'first_name',
+            'last_name',
+            'birth_date',
+            'language',
+            'medical_condition',
         )
 
     def delete(self):
@@ -302,8 +379,6 @@ class ClientShortSerializer(serializers.ModelSerializer):
     email = serializers.CharField(required=True)
     phone = serializers.CharField(required=False)
     
-    #student = Student.objects.filter(client= self.identifier)
-
     class Meta:
         model = Client
         fields = (
@@ -318,6 +393,7 @@ class ClientShortSerializer(serializers.ModelSerializer):
 
     def delete(self):
         self.instance.delete()
+
 
 class StudentSerializer(serializers.ModelSerializer):
     clubs = ClubSerializer(many=True)
@@ -431,7 +507,6 @@ class ClientSerializer(serializers.ModelSerializer):
     phone = serializers.CharField(required=False)
     language = serializers.CharField(required=False)
     location = serializers.CharField(required=False)
-    #student = Student.objects.filter(client= self.identifier)
 
     class Meta:
         model = Client
@@ -557,17 +632,20 @@ class CreateStudentAttendanceSerializer(StudentAttendanceSerializer):
 
 class StudentBookingSerializer(serializers.ModelSerializer):
     location = serializers.CharField()
-    student = StudentSerializer()
+    student = ShortStudentSerializer()
     location = serializers.CharField()
-    club = serializers.CharField()
+    club = ShortClubSerializer()
+    attendance = serializers.BooleanField()
 
     class Meta:
         model = Booking
         fields = (
+            'identifier',
             'location',
             'student',
             'date',
-            'location',
+            'club',
+            'attendance',
         )
 
     def delete(self):
@@ -579,6 +657,7 @@ class CreateStudentBookingSerializer(serializers.ModelSerializer):
     student = serializers.CharField()
     date = serializers.CharField()
     club = serializers.CharField()
+    attendance = serializers.BooleanField(required=False)
     #teacher = serializers.CharField()
 
     class Meta:
@@ -588,6 +667,7 @@ class CreateStudentBookingSerializer(serializers.ModelSerializer):
             'student',
             'date',
             'club',
+            'attendance',
             #'teacher',
         )
 
@@ -602,7 +682,16 @@ class CreateStudentBookingSerializer(serializers.ModelSerializer):
         except Student.DoesNotExist:
             raise exceptions.NotFound()
 
-        
+
+        try:
+            club = Club.objects.get(
+                identifier=validated_data['club']
+            )
+            validated_data['club'] = club
+
+        except Club.DoesNotExist:
+            raise exceptions.NotFound()
+
 
         return validated_data
 
@@ -613,7 +702,7 @@ class CreateStudentBookingSerializer(serializers.ModelSerializer):
                 location=validated_data.get('location'),
                 date=validated_data.get('date'),
                 club=validated_data.get('club'),
+                #attendance = validated_data.get('attendance'),
                 )
-
         return booking
 

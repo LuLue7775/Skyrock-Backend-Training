@@ -17,6 +17,8 @@ urlpatterns = (
     
     url(r'^admin/club/$', views.AdminClubCreateView.as_view(), name='user-course-view'),
     url(r'^admin/club/(?P<id>([a-zA-Z0-9\_\-]+))/$', views.AdminClubView.as_view(), name='user-course-view'),
+    url(r'^admin/badge/$', views.AdminBadgeCreateView.as_view(), name='user-badge-view'),
+    url(r'^admin/badge/(?P<id>([a-zA-Z0-9\_\-]+))/$', views.AdminBadgeView.as_view(), name='user-badge-view'),
     
     url(r'^admin/booking/$', views.CreateAdminBookingView.as_view(), name='user-booking-view'),
     url(r'^admin/booking/(?P<booking>([a-zA-Z0-9\_\-]+))/$', views.AdminBookingView.as_view(), name='user-node-view'),
@@ -28,9 +30,10 @@ urlpatterns = (
     url(r'^admin/student/(?P<id>([a-zA-Z0-9\_\-]+))/$', views.AdminStudentView.as_view(), name='user-node-view'),
     #url(r'^staff/student/(?P<id>([a-zA-Z0-9\_\-]+))/attendance/$', views.AdminStudentAttendanceView.as_view(), name='user-node-view'),
     url(r'^admin/student/(?P<id>([a-zA-Z0-9\_\-]+))/club/$', views.AdminClubCreateView.as_view(), name='user-club-view'),
-    url(r'^admin/student/(?P<id>([a-zA-Z0-9\_\-]+))/club/(?P<club>([a-zA-Z0-9\_\-]+))/$', views.AdminClubView.as_view(), name='user-club-view'),
+    url(r'^admin/student/(?P<id>([a-zA-Z0-9\_\-]+))/club/(?P<club>([a-zA-Z0-9\_\-]+))/$', views.AdminClubView.as_view(), name='user-club-add'),
+    url(r'^admin/student/(?P<id>([a-zA-Z0-9\_\-]+))/club/(?P<club>([a-zA-Z0-9\_\-]+))/badge/$', views.AdminBadgeAdd.as_view(), name='user-badge-add'),
     url(r'^admin/student/(?P<id>([a-zA-Z0-9\_\-]+))/booking/$', views.StudentBookingListView.as_view(), name='user-node-view'),
-    url(r'^admin/student/(?P<id>([a-zA-Z0-9\_\-]+))/booking/(?P<booking>([a-zA-Z0-9\_\-]+))$', views.AdminStudentBookingView.as_view(), name='user-node-view'),
+    url(r'^admin/student/(?P<id>([a-zA-Z0-9\_\-]+))/booking/(?P<booking>([a-zA-Z0-9\_\-]+))/$', views.AdminBookingView.as_view(), name='user-node-view'),
     # url(r'^staff/student/(?P<id>([a-zA-Z0-9\_\-]+))/badge/$', views.AdminStudentBadgeListView.as_view(), name='user-node-view'),
 
 

@@ -191,7 +191,8 @@ class Booking(DateModel):
     location = models.CharField(max_length=100)
     student = models.ForeignKey('skyrock.Student')
     date = models.DateTimeField()
-    club = models.CharField(max_length=100)
+    club = models.ForeignKey('skyrock.Club')
+    attendance = models.BooleanField(default=True, blank=True)
     #teacher = models.CharField(max_length=100)
 
 
@@ -200,3 +201,4 @@ class Badge(DateModel):
         default=uuid.uuid4)
     name = models.CharField(max_length=50, db_index=True, blank=True)
     description = models.CharField(max_length=200, blank=True)
+    club_relation = models.CharField(max_length=200, blank=True)

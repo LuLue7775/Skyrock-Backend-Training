@@ -52,9 +52,9 @@ def root(request, format=None):
                 ('Password Reset', reverse('skyrock:user-password-reset',
                     request=request,
                     format=format)),
-                ('Course', reverse('skyrock:user-club-view',
-                    request=request,
-                    format=format)),
+                # ('Club', reverse('skyrock:user-club-view',
+                #     request=request,
+                #     format=format)),
                 ('Booking', reverse('skyrock:user-booking-view',
                     request=request,
                     format=format)),
@@ -344,6 +344,106 @@ class AdminClubView(GenericAPIView):
         )
 
 
+class AdminBadgeAdd(ListAPIView):
+    allowed_methods = ('GET','POST')
+    #authentication_classes = (AdminAuthentication,)
+    serializer_class = ClubSerializer    
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return AddBadgeSerializer
+        return super().get_serializer_class()
+
+    def get_queryset(self):
+        return Club.objects.filter(
+            identifier=self.kwargs['club']
+        ).order_by('-created')
+
+    def post(self, request, *args, **kwargs):
+        request.data['club'] = kwargs['club']
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save()
+
+        return Response(
+            {'status': 'success', 'data': ClubSerializer(instance).data},
+            status=status.HTTP_201_CREATED
+        )
+
+
+class AdminBadgeCreateView(ListAPIView):
+    allowed_methods = ('GET','POST')
+    #authentication_classes = (AdminAuthentication,)
+    serializer_class = BadgeSerializer    
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return CreateBadgeSerializer
+        return super().get_serializer_class()
+
+    def get_queryset(self):
+        return Badge.objects.filter(
+            
+        ).order_by('-created')
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save()
+        return Response(
+            {'status': 'success', 'data': BadgeSerializer(instance).data},
+            status=status.HTTP_201_CREATED
+        )
+
+
+class AdminBadgeView(GenericAPIView):
+    allowed_methods = ('GET','PATCH', 'DELETE')
+    #authentication_classes = (AdminAuthentication,)
+    serializer_class = BadgeSerializer  
+
+    def delete(self, request, *args, **kwargs):
+        try:
+            badge = Badge.objects.get(
+                identifier=kwargs['id']
+            )
+        except Badge.DoesNotExist:
+            raise exceptions.NotFound()
+
+        serializer = self.get_serializer(badge)
+        instance = serializer.delete()
+        return Response({'status': 'success'})
+
+    def get(self, request, *args, **kwargs):
+        try:
+            badge = Badge.objects.get(
+                identifier=str(kwargs['id']),
+            )
+        except Badge.DoesNotExist:
+            raise exceptions.NotFound()
+
+        serializer = self.get_serializer(badge)
+        return Response({'status': 'success', 'data': serializer.data})
+
+    def patch(self, request, *args, **kwargs):
+        try:
+            badge = Badge.objects.get(
+                identifier=kwargs['id'],
+            )
+        except Badge.DoesNotExist:
+            raise exceptions.NotFound()
+
+        serializer = self.get_serializer(
+            badge, 
+            data=request.data,
+            partial=True)
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save()
+        return Response(
+            {'status': 'success',
+             'data': BadgeSerializer(instance).data}
+        )
+
+
 class AdminStudentCreateView(ListAPIView):
     allowed_methods = ('GET','POST')
     #authentication_classes = (AdminAuthentication,)
@@ -512,14 +612,12 @@ class CreateAdminBookingView(ListAPIView):
         return super().get_serializer_class()
 
     def get_queryset(self, **kwargs):
-        
-
         return Booking.objects.filter(
             
             ).order_by('-created')
 
     def post(self, request, *args, **kwargs):
-        # request.data['student'] = kwargs["id"]
+        request.data['student'] = kwargs["id"]
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         instance = serializer.save()
@@ -533,6 +631,11 @@ class AdminBookingView(GenericAPIView):
     allowed_methods = ('GET','PATCH', 'DELETE')
     #authentication_classes = (AdminAuthentication,)
     serializer_class = StudentBookingSerializer  
+
+    def get_serializer_class(self):
+        if self.request.method == 'PATCH':
+            return CreateStudentBookingSerializer
+        return super().get_serializer_class()
 
     def delete(self, request, *args, **kwargs):
         try:
@@ -560,120 +663,37 @@ class AdminBookingView(GenericAPIView):
     def patch(self, request, *args, **kwargs):
         try:
             booking = Booking.objects.get(
-                identifier=kwargs['id'],
+                identifier=kwargs['booking'],
             )
         except Booking.DoesNotExist:
             raise exceptions.NotFound()
 
+        # try:
+        #     club = Club.objects.get(
+        #         identifier=request.data['club']
+        #     )
+        #     request.data['club'] = club
+        # except Club.DoesNotExist:
+        #     raise exceptions.NotFound()
+        request.data['student'] = kwargs["id"]
         serializer = self.get_serializer(
-            Booking, 
+            booking, 
             data=request.data,
             partial=True)
+
         serializer.is_valid(raise_exception=True)
         instance = serializer.save()
         return Response(
             {'status': 'success',
              'data': StudentBookingSerializer(instance).data}
-        )
-
-
-class AdminStudentBookingView(GenericAPIView):
-    allowed_methods = ('GET','PATCH', 'DELETE')
-    #authentication_classes = (AdminAuthentication,)
-    serializer_class = StudentBookingSerializer  
-
-    def get_serializer_class(self):
-        if self.request.method == 'POST':
-            return CreateStudentBookingSerializer
-        return super().get_serializer_class()
-
-    def get_queryset(self, **kwargs):
-        try:
-            student = Booking.objects.get(
-                identifier = self.kwargs['id'])
-        except Booking.DoesNotExist:
-            raise serializers.ValidationError(
-                    {"booking": ["The booking does not exist."]})
-
-        return Booking.objects.filter(
-            
-            ).order_by('-created')
-
-    def post(self, request, *args, **kwargs):
-        request.data['student'] = kwargs["booking"]
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        instance = serializer.save()
-        return Response(
-            {'status': 'success', 'data': StudentBookingSerializer(instance).data},
-            status=status.HTTP_201_CREATED
         )
 
 
 class StudentBookingListView(ListAPIView):
     allowed_methods = ('GET')
     #authentication_classes = (AdminAuthentication,)
-    serializer_class = StudentBookingSerializer    
-
-    def get_queryset(self, **kwargs):
-    
-        return Booking.objects.filter(
-            
-            ).order_by('-created')
-
-
-class AdminBookingView(GenericAPIView):
-    allowed_methods = ('GET','PATCH', 'DELETE')
-    #authentication_classes = (AdminAuthentication,)
-    serializer_class = StudentBookingSerializer  
-
-    def delete(self, request, *args, **kwargs):
-        try:
-            attendance = Booking.objects.get(
-                identifier=kwargs['booking']
-            )
-        except Booking.DoesNotExist:
-            raise exceptions.NotFound()
-
-        serializer = self.get_serializer(attendance)
-        instance = serializer.delete()
-        return Response({'status': 'success'})
-
-    def get(self, request, *args, **kwargs):
-        try:
-            booking = Booking.objects.get(
-                identifier=kwargs['booking']
-            )
-        except Booking.DoesNotExist:
-            raise exceptions.NotFound()
-
-        serializer = self.get_serializer(booking)
-        return Response({'status': 'success', 'data': serializer.data})
-
-    def patch(self, request, *args, **kwargs):
-        try:
-            booking = Booking.objects.get(
-                identifier=kwargs['id'],
-            )
-        except Booking.DoesNotExist:
-            raise exceptions.NotFound()
-
-        serializer = self.get_serializer(
-            Booking, 
-            data=request.data,
-            partial=True)
-        serializer.is_valid(raise_exception=True)
-        instance = serializer.save()
-        return Response(
-            {'status': 'success',
-             'data': StudentBookingSerializer(instance).data}
-        )
-
-
-class AdminStudentBookingView(GenericAPIView):
-    allowed_methods = ('GET','PATCH', 'DELETE')
-    #authentication_classes = (AdminAuthentication,)
-    serializer_class = StudentBookingSerializer  
+    serializer_class = StudentBookingSerializer   
+     
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -681,19 +701,15 @@ class AdminStudentBookingView(GenericAPIView):
         return super().get_serializer_class()
 
     def get_queryset(self, **kwargs):
-        try:
-            student = Booking.objects.get(
-                identifier = self.kwargs['id'])
-        except Booking.DoesNotExist:
-            raise serializers.ValidationError(
-                    {"booking": ["The booking does not exist."]})
-
+    
         return Booking.objects.filter(
-            
+            identifier = kwargs["id"]
             ).order_by('-created')
 
     def post(self, request, *args, **kwargs):
-        request.data['student'] = kwargs["booking"]
+        request.data['student'] = kwargs["id"]
+        print(request.data)
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         instance = serializer.save()
@@ -701,6 +717,7 @@ class AdminStudentBookingView(GenericAPIView):
             {'status': 'success', 'data': StudentBookingSerializer(instance).data},
             status=status.HTTP_201_CREATED
         )
+
 
 
 class AdminClientCreateView(ListAPIView):
