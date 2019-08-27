@@ -1,0 +1,11 @@
+# [START runtime]
+runtime: custom
+env: flex
+entrypoint: gunicorn -b :$PORT mysite.wsgi
+
+beta_settings:
+    cloud_sql_instances: skyrock-backend:us-central1:skyrock-db
+
+runtime_config:
+  python_version: 3
+# [END runtime]
