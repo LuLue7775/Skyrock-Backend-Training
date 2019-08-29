@@ -600,7 +600,7 @@ class RegisterSerializer(serializers.Serializer):
     role = serializers.ChoiceField(
         required=False,
         choices=Role.choices())
-    client = serializers.CharField(required=True,max_length=50)
+    client = serializers.CharField(required=False,max_length=50)
 
     def validate_email(self, email):
         return get_adapter().clean_email(email)
