@@ -18,6 +18,8 @@ from knox.models import AuthToken
 from django.contrib.auth import login as django_login, logout as django_logout
 from django.utils import timezone
 from django.db.models import Q
+from skyrock import signals
+
 
 from config import settings
 from skyrock.models import *
@@ -103,16 +105,18 @@ class RegisterView(GenericAPIView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
         user = serializer.save(request)
         token = AuthToken.objects.create(user=user)
 
-        complete_signup(
-            self.request._request,
-            user,
-            allauth_settings.EMAIL_VERIFICATION,
-            None
+        signals.user_signed_up.send(
+            sender=user.__class__,
+            request=request,
+            user=user
         )
+
+        from allauth.account.utils import send_email_confirmation
+        send_email_confirmation(request._request, user, signup=True)
+
 
         return Response(
             {'status': 'success',
@@ -230,6 +234,7 @@ class ResendVerifyEmailView(GenericAPIView):
         try:
             from allauth.account.utils import send_email_confirmation
             send_email_confirmation(request._request, user, signup=True)
+            
         except Exception as exc:
             logger.exception(exc)
             raise exceptions.ValidationError({'non_field_errors':
