@@ -635,8 +635,8 @@ class RegisterSerializer(serializers.Serializer):
         adapter.save_user(request, user, self)
         setup_user_email(request, user, [])
         user.role = request.data['role']
-
-        if(request.data['client']!=None):
+        print(request.data['client'])
+        if(request.data['client']!=''):
             try:
                 client = Client.objects.get(
                     identifier=request.data['client'],
@@ -645,7 +645,7 @@ class RegisterSerializer(serializers.Serializer):
 
             except Client.DoesNotExist:
                 raise exceptions.NotFound()
-                
+
         user.save()
         
         return user
