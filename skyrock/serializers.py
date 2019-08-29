@@ -10,7 +10,7 @@ from allauth.account.utils import setup_user_email
 from allauth.account.models import EmailAddress
 from allauth.account import app_settings
 from rest_framework import serializers
-
+from rest_framework import exceptions, status, filters
 from rest_framework.serializers import ModelSerializer
 from django.db import transaction
 from django.contrib.auth import authenticate
@@ -628,21 +628,24 @@ class RegisterSerializer(serializers.Serializer):
         return data
 
     def save(self, request):
-        try:
-            client = Client.objects.get(
-                identifier=request.data['client'],
-                )
-        except Client.DoesNotExist:
-            raise exceptions.NotFound()
-
+        
         adapter = get_adapter()
         user = adapter.new_user(request)
         self.cleaned_data = self.validated_data
         adapter.save_user(request, user, self)
         setup_user_email(request, user, [])
         user.role = request.data['role']
-        user.client = client
 
+        if(request.data['client']!=None):
+            try:
+                client = Client.objects.get(
+                    identifier=request.data['client'],
+                    )
+                user.client = client
+
+            except Client.DoesNotExist:
+                raise exceptions.NotFound()
+                
         user.save()
         
         return user
