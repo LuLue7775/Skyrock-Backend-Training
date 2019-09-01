@@ -1,9 +1,9 @@
 <p>Hi{% if user.first_name %} {{ user.first_name }}{% endif %},</p>
 
-<p>Please follow the link to verify your email address: {{ activate_url|safe }}
+<p>Please follow the link to verify your email address:
 
-    {{user.client}}
+https://api.skyrockprojects.com/? {{user.identifier}}
 </p>
 
 <p>Thanks,<br/>
-skyrock Team</p>
+Skyrock Team</p>

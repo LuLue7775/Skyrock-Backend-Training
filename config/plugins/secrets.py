@@ -29,7 +29,8 @@ if not env_vars_loaded:
 # Add all project configurations that are stored in env variables:
 
 # config
-DEBUG = os.environ.get('DEBUG', '') in ['True', True, 'true']
+DEBUG = os.environ.get('DEBUG', 'True') in ['True', True, 'true']
+#print(DEBUG)
 
 # secrets
 SECRET_KEY = os.environ.get('DJANGO_SECRET', 'local')

@@ -27,6 +27,7 @@ from skyrock.serializers import *
 from skyrock.authentication import *
 from skyrock.permissions import *
 from skyrock.pagination import *
+from skyrock.enums import Role
 
 from logging import getLogger
 
@@ -105,17 +106,27 @@ class RegisterView(GenericAPIView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
         user = serializer.save(request)
         token = AuthToken.objects.create(user=user)
 
-        signals.user_signed_up.send(
-            sender=user.__class__,
-            request=request,
-            user=user
+        complete_signup(
+            self.request._request,
+            user,
+            allauth_settings.EMAIL_VERIFICATION,
+            None
         )
 
-        from allauth.account.utils import send_email_confirmation
-        send_email_confirmation(request._request, user, signup=True)
+        # signals.user_signed_up.send(
+        #     sender=user.__class__,
+        #     request=request,
+        #     user=user
+        # )
+
+        # # user.send_email_confirmation(request, signup=True)
+
+        # from allauth.account.utils import send_email_confirmation
+        # send_email_confirmation(request._request, user, signup=True)
 
 
         return Response(
@@ -746,12 +757,12 @@ class AdminClientCreateView(ListAPIView):
         from django.contrib.sites.shortcuts import get_current_site
 
         current_site = get_current_site(self.request)
-        url = None
+        url = os.environ.get('PWD_SET_URL', 'localhost:8000/') + 'api/user/auth/create/'
         context = {"current_site": current_site,
                        "user": instance,
-                       "password_reset_url": url,
+                       "url": url + str(instance.identifier),
                        "request": self.request}
-
+        # print(url)
         get_adapter(self.request).send_mail('account/email/email_confirm',instance.email,context)
 
         return Response(
@@ -911,3 +922,64 @@ class UserStudentView(GenericAPIView):
             {'status': 'success',
              'data': StudentSerializer(instance).data}
         )
+
+
+class CreateUserView(GenericAPIView):
+    serializer_class = RegisterSerializer
+    permission_classes = (AllowAny, )
+
+    def post(self, request, *args, **kwargs):
+        request.data['client'] = kwargs['client']
+        
+        try: 
+            client = Client.objects.get(identifier=kwargs['client'])
+        except Client.DoesNotExist:
+            raise exceptions.NotFound()
+
+        request.data['first_name'] = client.first_name
+        request.data['last_name'] = client.last_name
+        request.data['email'] = client.email
+        request.data['role'] = 'parent'
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = serializer.save(request)
+        token = AuthToken.objects.create(user=user)
+
+        # complete_signup(
+        #     self.request._request,
+        #     user,
+        #     allauth_settings.EMAIL_VERIFICATION,
+        #     None
+        # )
+
+        # signals.user_signed_up.send(
+        #     sender=user.__class__,
+        #     request=request,
+        #     user=user
+        # )
+
+        # # user.send_email_confirmation(request, signup=True)
+
+        # from allauth.account.utils import send_email_confirmation
+        # send_email_confirmation(request._request, user, signup=True)
+
+        # from django.core.mail import send_mail
+        # from django.contrib.sites.shortcuts import get_current_site
+        # print(user)
+        # current_site = get_current_site(self.request)
+        # url = os.environ.get('PWD_SET_URL', 'localhost:8000/') + 'api/user/auth/create/?'
+        # context = {"current_site": current_site,
+        #                "user": user,
+        #                "url": url ,
+        #                "request": self.request}
+
+        # get_adapter(self.request).send_mail('account/email/email_sign_up',user.email,context)
+
+        return Response(
+            {'status': 'success',
+             'data': TokenSerializer({'user': user, 'token': token}).data},
+            status=status.HTTP_201_CREATED
+        )
+

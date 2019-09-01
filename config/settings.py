@@ -113,7 +113,7 @@ USE_TZ = True
 # ---------------------------------------------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
-STATIC_URL = 'https://storage.googleapis.com/<your-gcs-bucket>/static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(PROJECT_DIR, 'var/www/static')
 
 STATICFILES_DIRS = [
@@ -124,7 +124,6 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(PROJECT_DIR, 'var/www/media')
-
 
 # Template files
 # ---------------------------------------------------------------------------------------------------------------------

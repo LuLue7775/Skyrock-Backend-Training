@@ -12,6 +12,8 @@ urlpatterns = (
     url(r'^user/auth/logout/$', views.LogoutView.as_view(), name='user-logout'),
     url(r'^user/auth/password/change/$', views.PasswordChangeView.as_view(), name='user-password-change'),
     url(r'^user/auth/password/reset/$', views.PasswordResetView.as_view(), name='user-password-reset'),
+    url(r'^user/auth/create/(?P<client>([a-zA-Z0-9\_\-]+))/$', views.CreateUserView.as_view(), name='user-create'),
+
 
     url(r'^user/client/(?P<id>([a-zA-Z0-9\_\-]+))/$', views.UserClientView.as_view(), name='user-client-view'),
     url(r'^user/student/(?P<id>([a-zA-Z0-9\_\-]+))/$', views.UserStudentView.as_view(), name='user-student-view'),

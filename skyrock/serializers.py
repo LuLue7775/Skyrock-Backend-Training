@@ -608,10 +608,10 @@ class RegisterSerializer(serializers.Serializer):
     def validate_password1(self, password):
         return get_adapter().clean_password(password)
 
-    def validate(self, data):
-        email = data.get('email')
-        password1 = data.get('password1')
-        password2 = data.get('password2')
+    def validate(self, validated_data):
+        email = validated_data.get('email')
+        password1 = validated_data.get('password1')
+        password2 = validated_data.get('password2')
 
         if password1 != password2:
             raise serializers.ValidationError(
@@ -625,7 +625,7 @@ class RegisterSerializer(serializers.Serializer):
                              "with this email address.")]})
 
 
-        return data
+        return validated_data
 
     def save(self, request):
         
