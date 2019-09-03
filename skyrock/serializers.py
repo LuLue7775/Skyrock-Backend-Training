@@ -93,6 +93,9 @@ class CreateBadgeSerializer(BadgeSerializer):
 class ClubSerializer(serializers.ModelSerializer):
     identifier = serializers.UUIDField(read_only=True)
     badges = BadgeSerializer(many=True)
+    name = serializers.ChoiceField(
+                required=False,
+                choices=Clubs.choices())
 
     class Meta:
         model = Club
@@ -109,6 +112,9 @@ class ClubSerializer(serializers.ModelSerializer):
 
 class ShortClubSerializer(serializers.ModelSerializer):
     identifier = serializers.UUIDField(read_only=True)
+    name = serializers.ChoiceField(
+                required=False,
+                choices=Clubs.choices())
     #badges = BadgeSerializer(many=True)
 
     class Meta:
@@ -125,7 +131,10 @@ class ShortClubSerializer(serializers.ModelSerializer):
 
 
 class CreateClubSerializer(ClubSerializer):
-    name = serializers.CharField(required=True)
+    name = serializers.ChoiceField(
+                required=True,
+                source='name.value',
+                choices=Clubs.choices())
     description = serializers.CharField(required=True)
     student = serializers.CharField(required=True)
 
@@ -154,7 +163,8 @@ class CreateClubSerializer(ClubSerializer):
             raise exceptions.NotFound()
 
         club = Club.objects.create(
-                name=validated_data['name'],
+                # name=Clubs.validated_data['name'],
+                name = validated_data['name']['value'],
                 description=validated_data['description'],
                 student=student,
                 )
@@ -227,7 +237,6 @@ class ClientShortSerializer(serializers.ModelSerializer):
     class Meta:
         model = Client
         fields = (
-            'identifier',
             'first_name',
             'last_name',
             'email',
@@ -249,6 +258,7 @@ class StudentSerializer(serializers.ModelSerializer):
     language = serializers.CharField()
     # notes = serializers.CharField()
     medical_condition = serializers.CharField()
+
 
     class Meta:
         model = Student
@@ -377,7 +387,6 @@ class CreateClientSerializer(ClientSerializer):
     email = serializers.CharField(required=True)
     phone = serializers.CharField(required=False)
     language = serializers.CharField(required=False)
-    location = serializers.CharField(required=False)
 
     class Meta:
         model = ClientSerializer.Meta.model

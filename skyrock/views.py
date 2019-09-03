@@ -8,7 +8,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework import exceptions, status, filters
-from rest_framework.pagination import PageNumberPagination
+# from rest_framework.pagination import PageNumberPagination
 from allauth.account.models import EmailAddress
 from allauth.account.utils import complete_signup
 from allauth.account.models import EmailConfirmation, EmailConfirmationHMAC
@@ -20,14 +20,16 @@ from django.utils import timezone
 from django.db.models import Q
 from skyrock import signals
 
+from skyrock.pagination import ResultsSetPagination
 
 from config import settings
 from skyrock.models import *
 from skyrock.serializers import * 
-from skyrock.authentication import *
+from skyrock.authentication import AdminAuthentication, UserAuthentication
 from skyrock.permissions import *
 from skyrock.pagination import *
 from skyrock.enums import Role
+from skyrock.filters import AdminStudentFilterSet
 
 from logging import getLogger
 
@@ -39,6 +41,36 @@ logger = getLogger('django')
 def root(request, format=None):
     return Response(
         [
+            {'Admin': OrderedDict([
+                ('Register', reverse('skyrock:admin-register',
+                    request=request,
+                    format=format)),
+                ('Login', reverse('skyrock:admin-login',
+                    request=request,
+                    format=format)),
+                ('Logout', reverse('skyrock:admin-logout',
+                    request=request,
+                    format=format)),
+                ('Password Change', reverse('skyrock:admin-password-change',
+                    request=request,
+                    format=format)),
+                ('Password Reset', reverse('skyrock:admin-password-reset',
+                    request=request,
+                    format=format)),
+                # ('Club', reverse('skyrock:user-club-view',
+                #     request=request,
+                #     format=format)),
+                ('Booking', reverse('skyrock:admin-booking-view',
+                    request=request,
+                    format=format)),
+                ('Student', reverse('skyrock:admin-students-view',
+                    request=request,
+                    format=format)),
+                ('Client', reverse('skyrock:admin-parent-view',
+                    request=request,
+                    format=format)),
+                    
+            ])},
             {'User': OrderedDict([
                 ('Register', reverse('skyrock:user-register',
                     request=request,
@@ -58,15 +90,15 @@ def root(request, format=None):
                 # ('Club', reverse('skyrock:user-club-view',
                 #     request=request,
                 #     format=format)),
-                ('Booking', reverse('skyrock:user-booking-view',
+                ('User', reverse('skyrock:user-view',
                     request=request,
                     format=format)),
-                ('Student', reverse('skyrock:admin-student-view',
-                    request=request,
-                    format=format)),
-                ('Client', reverse('skyrock:user-parent-view',
-                    request=request,
-                    format=format)),
+                # ('Student', reverse('skyrock:admin-student-view',
+                #     request=request,
+                #     format=format)),
+                # ('Client', reverse('skyrock:user-parent-view',
+                #     request=request,
+                #     format=format)),
                     
             ])},
         ])
@@ -289,6 +321,7 @@ class AdminClubCreateView(ListAPIView):
     allowed_methods = ('GET','POST')
     #authentication_classes = (AdminAuthentication,)
     serializer_class = ClubSerializer    
+    # pagination_class = ResultsSetPagination
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -363,6 +396,8 @@ class AdminBadgeAdd(ListAPIView):
     allowed_methods = ('GET','POST')
     #authentication_classes = (AdminAuthentication,)
     serializer_class = ClubSerializer    
+    # pagination_class = ResultsSetPagination
+
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -390,6 +425,8 @@ class AdminBadgeCreateView(ListAPIView):
     allowed_methods = ('GET','POST')
     #authentication_classes = (AdminAuthentication,)
     serializer_class = BadgeSerializer    
+    # pagination_class = ResultsSetPagination
+
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -461,8 +498,11 @@ class AdminBadgeView(GenericAPIView):
 
 class AdminStudentCreateView(ListAPIView):
     allowed_methods = ('GET','POST')
-    #authentication_classes = (AdminAuthentication,)
-    serializer_class = StudentSerializer    
+    # authentication_classes = (AdminAuthentication)
+    serializer_class = StudentSerializer  
+    # pagination_class = ResultsSetPagination
+    # filter_fields = ('identifier', 'clubs', 'client', 'birth_date',)
+    # filter_class = AdminStudentFilterSet  
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -470,7 +510,7 @@ class AdminStudentCreateView(ListAPIView):
         return super().get_serializer_class()
 
     def get_queryset(self):
-        return Student.objects.filter(
+        return Student.objects.all(
         ).order_by('-created')
 
     def post(self, request, *args, **kwargs):
@@ -485,7 +525,7 @@ class AdminStudentCreateView(ListAPIView):
 
 class AdminStudentView(GenericAPIView):
     allowed_methods = ('GET','PATCH', 'DELETE')
-    #authentication_classes = (AdminAuthentication,)
+    # authentication_classes = (AdminAuthentication,)
     serializer_class = StudentSerializer  
 
     # def get_serializer_class(self):
@@ -539,7 +579,9 @@ class AdminStudentView(GenericAPIView):
 class AdminStudentAttendanceView(ListAPIView):
     allowed_methods = ('GET','POST')
     #authentication_classes = (AdminAuthentication,)
-    serializer_class = StudentAttendanceSerializer    
+    serializer_class = StudentAttendanceSerializer   
+    # pagination_class = ResultsSetPagination
+ 
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -619,7 +661,9 @@ class CreateAdminStudentAttendanceView(GenericAPIView):
 class CreateAdminBookingView(ListAPIView):
     allowed_methods = ('GET','POST')
     #authentication_classes = (AdminAuthentication,)
-    serializer_class = StudentBookingSerializer    
+    serializer_class = StudentBookingSerializer 
+    # pagination_class = ResultsSetPagination
+   
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -708,6 +752,7 @@ class StudentBookingListView(ListAPIView):
     allowed_methods = ('GET')
     #authentication_classes = (AdminAuthentication,)
     serializer_class = StudentBookingSerializer   
+    # pagination_class = ResultsSetPagination
      
 
     def get_serializer_class(self):
@@ -737,7 +782,8 @@ class StudentBookingListView(ListAPIView):
 class AdminClientCreateView(ListAPIView):
     allowed_methods = ('GET','POST')
     #authentication_classes = (AdminAuthentication,)
-    serializer_class = ClientSerializer    
+    serializer_class = ClientSerializer  
+    # pagination_class = ResultsSetPagination  
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -983,3 +1029,20 @@ class CreateUserView(GenericAPIView):
             status=status.HTTP_201_CREATED
         )
 
+
+class UserView(GenericAPIView):
+    allowed_methods = ('GET','PATCH', 'DELETE')
+    #authentication_classes = (AdminAuthentication,)
+    serializer_class = UserSerializer  
+
+    def get(self, request, *args, **kwargs):
+        
+        try:
+            client = User.objects.get(
+                email = request.user
+            )
+        except Client.DoesNotExist:
+            raise exceptions.NotFound()
+
+        serializer = self.get_serializer(client)
+        return Response({'status': 'success', 'data': serializer.data})

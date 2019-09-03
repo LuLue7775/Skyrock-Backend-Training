@@ -164,7 +164,10 @@ class Program(DateModel):
 class Club(DateModel):
     identifier = models.UUIDField(unique=True, db_index=True,
         default=uuid.uuid4)
-    name = models.CharField(max_length=50, db_index=True, blank=True)
+    name = EnumField(
+                Clubs, 
+                max_length=50,
+                default=Clubs.NONE)
     description = models.CharField(max_length=200, blank=True)
     badges = models.ManyToManyField('skyrock.Badge', blank=True)
     student = models.ForeignKey('skyrock.Student', on_delete = models.CASCADE, related_name="clubs")

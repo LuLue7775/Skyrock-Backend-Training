@@ -19,6 +19,17 @@ class Location(Enum):
     TIANMU = 'tianmu'
     DAZHI = 'dazhi'
     NONE = 'none'
+
+class Clubs(Enum):
+    YOUNG_INVENTORS = 'Young Inventors'
+    MACHINE_MAKERS = 'Machine Makers'
+    CODE_WIZARDS = 'Code Wizards'
+    GAME_CREATORS = 'Game Creators'
+    FASHION_ENGINEERS = 'Fashion Engineers'
+    MUSIC_INNOVATORS = 'Music Innovators'
+    NANO = 'Nano'
+    MEGA = 'Mega'
+    NONE = 'None'
     
 
 

@@ -35,10 +35,10 @@ class AdminAuthentication(HeaderAuthentication):
 
     def authenticate(self, request):
         token = self.get_auth_header(request)
-        print(request.user)
+        print(token)
         # token = "" #Overide token for testing
 
-
+        user=1
         # try:
         #     user = rehive.user.get()
         #     groups = [g['name'] for g in user['groups']]
@@ -47,20 +47,14 @@ class AdminAuthentication(HeaderAuthentication):
         # except APIException:
         #     raise exceptions.AuthenticationFailed(_('Invalid user'))
 
-        # try:
-        #     company = Company.objects.get(identifier=user['company'])
-        # except Company.DoesNotExist:
-        #     raise exceptions.AuthenticationFailed(
-        #         _("Inactive company. Please activate the company first."))
-
         # user, created = User.objects.get_or_create(
         #     identifier=uuid.UUID(self.user['identifier']).hex)
 
         # Return the permanent token for (not the request token) the company.
-        #return user
+        return user
 
 
-class BoxAuthentication(HeaderAuthentication):
+class UserAuthentication(HeaderAuthentication):
     """
     Authentication for users.
     """
