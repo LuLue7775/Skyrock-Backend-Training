@@ -648,10 +648,16 @@ class RegisterSerializer(serializers.Serializer):
         except Exception as exc:
             user.role = Role.PARENT
 
-        if(request.data['client']!=''):
+        try: 
+            client = request.data['client']
+        except Exception as exc:
+            client = ''
+
+        
+        if(client):
             try:
                 client = Client.objects.get(
-                    identifier=request.data['client'],
+                    identifier=client,
                     )
                 user.client = client
 
@@ -715,10 +721,16 @@ class UserRegisterSerializer(serializers.Serializer):
         except Exception as exc:
             user.role = Role.PARENT
 
-        if(request.data['client']!=''):
+        try: 
+            client = request.data['client']
+        except Exception as exc:
+            client = ''
+
+        
+        if(client):
             try:
                 client = Client.objects.get(
-                    identifier=request.data['client'],
+                    identifier=client,
                     )
                 user.client = client
 
