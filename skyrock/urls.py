@@ -7,7 +7,7 @@ urlpatterns = (
     # Public
     url(r'^$', views.root),
     
-    url(r'^user/auth/register/$', views.RegisterView.as_view(), name='user-register'),
+    url(r'^user/auth/register/$', views.UserRegisterView.as_view(), name='user-register'),
     url(r'^user/auth/login/$', views.LoginView.as_view(), name='user-login'),
     url(r'^user/auth/logout/$', views.LogoutView.as_view(), name='user-logout'),
     url(r'^user/auth/password/change/$', views.PasswordChangeView.as_view(), name='user-password-change'),

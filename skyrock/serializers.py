@@ -643,8 +643,78 @@ class RegisterSerializer(serializers.Serializer):
         self.cleaned_data = self.validated_data
         adapter.save_user(request, user, self)
         setup_user_email(request, user, [])
-        user.role = request.data['role']
-        print(request.data['client'])
+        try:
+            user.role = request.data['role']
+        except Exception as exc:
+            user.role = Role.PARENT
+
+        if(request.data['client']!=''):
+            try:
+                client = Client.objects.get(
+                    identifier=request.data['client'],
+                    )
+                user.client = client
+
+            except Client.DoesNotExist:
+                raise exceptions.NotFound()
+
+        user.save()
+        
+        return user
+
+
+class UserRegisterSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    first_name = serializers.CharField(required=False, allow_blank=True,
+        max_length=50, write_only=True)
+    last_name = serializers.CharField(required=False, allow_blank=True,
+        max_length=50, write_only=True)
+    password1 = serializers.CharField(required=True, write_only=True,
+        max_length=128, style={'input_type': 'password'})
+    password2 = serializers.CharField(required=True, write_only=True,
+        max_length=128, style={'input_type': 'password'})
+    role = serializers.ChoiceField(
+        required=False,
+        choices=Role.choices())
+    client = serializers.CharField(required=False,max_length=50)
+
+    def validate_email(self, email):
+        return get_adapter().clean_email(email)
+
+    def validate_password1(self, password):
+        return get_adapter().clean_password(password)
+
+    def validate(self, validated_data):
+        email = validated_data.get('email')
+        password1 = validated_data.get('password1')
+        password2 = validated_data.get('password2')
+
+        if password1 != password2:
+            raise serializers.ValidationError(
+                {"non_field_errors": [
+                    _("The two password fields don't match.")]})
+
+        # Further email address validation related to the company.
+        if EmailAddress.objects.filter(email__iexact=email).exists():
+            raise serializers.ValidationError(
+                {"email": [_("A user is already registered "
+                             "with this email address.")]})
+
+
+        return validated_data
+
+    def save(self, request):
+        
+        adapter = get_adapter()
+        user = adapter.new_user(request)
+        self.cleaned_data = self.validated_data
+        adapter.save_user(request, user, self)
+        setup_user_email(request, user, [])
+        try:
+            user.role = request.data['role']
+        except Exception as exc:
+            user.role = Role.PARENT
+
         if(request.data['client']!=''):
             try:
                 client = Client.objects.get(

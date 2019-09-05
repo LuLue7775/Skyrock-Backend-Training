@@ -168,6 +168,43 @@ class RegisterView(GenericAPIView):
         )
 
 
+class UserRegisterView(GenericAPIView):
+    serializer_class = UserRegisterSerializer
+    permission_classes = (AllowAny, )
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = serializer.save(request)
+        token = AuthToken.objects.create(user=user)
+
+        complete_signup(
+            self.request._request,
+            user,
+            allauth_settings.EMAIL_VERIFICATION,
+            None
+        )
+
+        # signals.user_signed_up.send(
+        #     sender=user.__class__,
+        #     request=request,
+        #     user=user
+        # )
+
+        # # user.send_email_confirmation(request, signup=True)
+
+        # from allauth.account.utils import send_email_confirmation
+        # send_email_confirmation(request._request, user, signup=True)
+
+
+        return Response(
+            {'status': 'success',
+             'data': TokenSerializer({'user': user, 'token': token}).data},
+            status=status.HTTP_201_CREATED
+        )
+
+
 class LoginView(GenericAPIView):
     serializer_class = LoginSerializer
     permission_classes = (AllowAny,)
