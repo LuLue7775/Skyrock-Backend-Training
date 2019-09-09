@@ -498,22 +498,93 @@ class CreateStudentAttendanceSerializer(StudentAttendanceSerializer):
         )
 
 
-class StudentBookingSerializer(serializers.ModelSerializer):
+class StudentSessionSerializer(serializers.ModelSerializer):
     location = serializers.CharField()
-    student = ShortStudentSerializer()
-    location = serializers.CharField()
-    club = ShortClubSerializer()
-    attendance = serializers.BooleanField()
+    date = serializers.CharField()
+    club = serializers.CharField()
+    teacher = serializers.CharField()
 
     class Meta:
         model = Booking
         fields = (
             'identifier',
             'location',
-            'student',
             'date',
             'club',
+            'teacher',
+        )
+
+    def delete(self):
+        self.instance.delete()
+
+
+class CreateStudentSessionSerializer(serializers.ModelSerializer):
+    location = serializers.CharField()
+    date = serializers.CharField()
+    club = serializers.CharField()
+    teacher = serializers.CharField(required=False)
+
+    #teacher = serializers.CharField()
+
+    class Meta:
+        model = Session
+        fields = (
+            'location',
+            'date',
+            'club',
+            'teacher',
+        )
+
+    def validate(self, validated_data):
+
+        # try:
+        #     club = Club.objects.get(
+        #         identifier=validated_data['club']
+        #     )
+        #     validated_data['club'] = club
+
+        # except Club.DoesNotExist:
+        #     raise exceptions.NotFound()
+
+        
+        # try:
+        #     user = User.objects.get(
+        #         identifier=validated_data['club']
+        #     )
+        #     validated_data['club'] = club
+
+        # except Club.DoesNotExist:
+        #     raise exceptions.NotFound()
+
+
+
+        return validated_data
+
+    def create(self, validated_data):
+
+        session = Session.objects.create(
+                location=validated_data.get('location'),
+                date=validated_data.get('date'),
+                club=validated_data.get('club'),
+                # teacher = validated_data.get('attendance'),
+                )
+        return session
+
+
+class StudentBookingSerializer(serializers.ModelSerializer):
+    student = ShortStudentSerializer()
+    client = serializers.CharField(source='client.identifier',)
+    attendance = serializers.BooleanField()
+    session = StudentSessionSerializer()
+
+    class Meta:
+        model = Session
+        fields = (
+            'identifier',
+            'student',
             'attendance',
+            'session',
+            'client',
         )
 
     def delete(self):
@@ -521,43 +592,44 @@ class StudentBookingSerializer(serializers.ModelSerializer):
 
 
 class CreateStudentBookingSerializer(serializers.ModelSerializer):
-    location = serializers.CharField()
     student = serializers.CharField()
-    date = serializers.CharField()
-    club = serializers.CharField()
     attendance = serializers.BooleanField(required=False)
+    session = serializers.CharField()
+    client = serializers.CharField()
     #teacher = serializers.CharField()
 
     class Meta:
         model = Booking
         fields = (
-            'location',
             'student',
-            'date',
-            'club',
             'attendance',
-            #'teacher',
+            'session',
+            'client',
         )
 
     def validate(self, validated_data):
-        
         try:
             student = Student.objects.get(
                 identifier=validated_data['student']
             )
             validated_data['student'] = student
-
         except Student.DoesNotExist:
             raise exceptions.NotFound()
 
+        try:
+            client = Client.objects.get(
+                identifier=validated_data['client']
+            )
+            validated_data['client'] = client
+        except Client.DoesNotExist:
+            raise exceptions.NotFound()
 
         try:
-            club = Club.objects.get(
-                identifier=validated_data['club']
+            session = Session.objects.get(
+                identifier=validated_data.get('session')
             )
-            validated_data['club'] = club
-
-        except Club.DoesNotExist:
+            validated_data['session'] = session
+        except Session.DoesNotExist:
             raise exceptions.NotFound()
 
 
@@ -567,9 +639,8 @@ class CreateStudentBookingSerializer(serializers.ModelSerializer):
 
         booking = Booking.objects.create(
                 student=validated_data['student'],
-                location=validated_data.get('location'),
-                date=validated_data.get('date'),
-                club=validated_data.get('club'),
+                client=validated_data['client'],
+                session = validated_data['session']
                 #attendance = validated_data.get('attendance'),
                 )
         return booking

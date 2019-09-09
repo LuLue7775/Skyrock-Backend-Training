@@ -188,12 +188,10 @@ class Sale(DateModel):
 class Booking(DateModel):
     identifier = models.UUIDField(unique=True, db_index=True,
         default=uuid.uuid4)
-    location = models.CharField(max_length=100)
     student = models.ForeignKey('skyrock.Student')
-    date = models.DateTimeField()
-    club = models.ForeignKey('skyrock.Club')
+    client = models.ForeignKey('skyrock.Client',blank=True, null=True)
+    session = models.ForeignKey('skyrock.Session', blank=True, null=True)
     attendance = models.BooleanField(default=True, blank=True)
-    #teacher = models.CharField(max_length=100)
 
 
 class Badge(DateModel):
@@ -202,3 +200,15 @@ class Badge(DateModel):
     name = models.CharField(max_length=50, db_index=True, blank=True)
     description = models.CharField(max_length=200, blank=True)
     club_relation = models.CharField(max_length=200, blank=True)
+
+
+class Session(DateModel):
+    identifier = models.UUIDField(unique=True, db_index=True,
+        default=uuid.uuid4)
+    location = models.CharField(max_length=100)
+    date = models.DateTimeField()
+    club = EnumField(
+                Clubs, 
+                max_length=50,
+                default=Clubs.NONE)
+    teacher = models.ManyToManyField('skyrock.User', blank=True)

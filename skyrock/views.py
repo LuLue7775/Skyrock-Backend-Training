@@ -69,6 +69,10 @@ def root(request, format=None):
                 ('Client', reverse('skyrock:admin-parent-view',
                     request=request,
                     format=format)),
+                ('Session', reverse('skyrock:admin-session-list',
+                    request=request,
+                    format=format)),
+                    
                     
             ])},
             {'User': OrderedDict([
@@ -96,9 +100,9 @@ def root(request, format=None):
                 # ('Student', reverse('skyrock:admin-student-view',
                 #     request=request,
                 #     format=format)),
-                # ('Client', reverse('skyrock:user-parent-view',
-                #     request=request,
-                #     format=format)),
+                ('Booking', reverse('skyrock:user-booking-view',
+                    request=request,
+                    format=format)),
                     
             ])},
         ])
@@ -713,7 +717,6 @@ class CreateAdminBookingView(ListAPIView):
             ).order_by('-created')
 
     def post(self, request, *args, **kwargs):
-        request.data['student'] = kwargs["id"]
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         instance = serializer.save()
@@ -771,7 +774,6 @@ class AdminBookingView(GenericAPIView):
         #     request.data['club'] = club
         # except Club.DoesNotExist:
         #     raise exceptions.NotFound()
-        request.data['student'] = kwargs["id"]
         serializer = self.get_serializer(
             booking, 
             data=request.data,
@@ -782,6 +784,182 @@ class AdminBookingView(GenericAPIView):
         return Response(
             {'status': 'success',
              'data': StudentBookingSerializer(instance).data}
+        )
+
+
+class CreateUserBookingView(ListAPIView):
+    allowed_methods = ('GET','POST')
+    #authentication_classes = (AdminAuthentication,)
+    serializer_class = StudentBookingSerializer 
+    # pagination_class = ResultsSetPagination
+   
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return CreateStudentBookingSerializer
+        return super().get_serializer_class()
+
+    def get_queryset(self, **kwargs):
+        try: 
+            client = Client.objects.get(identifier=self.request.user.client.identifier)
+        except Client.DoesNotExist:
+            raise exceptions.NotFound()
+
+        return Booking.objects.filter(
+            client=client
+            ).order_by('-created')
+
+    def post(self, request, *args, **kwargs):
+        request.data['client'] = str(self.request.user.client.identifier)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save()
+        return Response(
+            {'status': 'success', 'data': StudentBookingSerializer(instance).data},
+            status=status.HTTP_201_CREATED
+        )
+
+
+class UserBookingView(GenericAPIView):
+    allowed_methods = ('GET','PATCH', 'DELETE')
+    #authentication_classes = (AdminAuthentication,)
+    serializer_class = StudentBookingSerializer  
+
+    def get_serializer_class(self):
+        if self.request.method == 'PATCH':
+            return CreateStudentBookingSerializer
+        return super().get_serializer_class()
+
+    def delete(self, request, *args, **kwargs):
+        try:
+            attendance = Booking.objects.get(
+                identifier=kwargs['booking']
+            )
+        except Booking.DoesNotExist:
+            raise exceptions.NotFound()
+
+        serializer = self.get_serializer(attendance)
+        instance = serializer.delete()
+        return Response({'status': 'success'})
+
+    def get(self, request, *args, **kwargs):
+        try:
+            booking = Booking.objects.get(
+                identifier=kwargs['booking']
+            )
+        except Booking.DoesNotExist:
+            raise exceptions.NotFound()
+
+        serializer = self.get_serializer(booking)
+        return Response({'status': 'success', 'data': serializer.data})
+
+    def patch(self, request, *args, **kwargs):
+        try:
+            booking = Booking.objects.get(
+                identifier=kwargs['booking'],
+            )
+        except Booking.DoesNotExist:
+            raise exceptions.NotFound()
+
+        # try:
+        #     club = Club.objects.get(
+        #         identifier=request.data['club']
+        #     )
+        #     request.data['club'] = club
+        # except Club.DoesNotExist:
+        #     raise exceptions.NotFound()
+        # request.data['student'] = kwargs["id"]
+        serializer = self.get_serializer(
+            booking, 
+            data=request.data,
+            partial=True)
+
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save()
+        return Response(
+            {'status': 'success',
+             'data': StudentBookingSerializer(instance).data}
+        )
+
+
+class CreateAdminSessionView(ListAPIView):
+    allowed_methods = ('GET','POST')
+    #authentication_classes = (AdminAuthentication,)
+    serializer_class = StudentSessionSerializer 
+    # pagination_class = ResultsSetPagination
+   
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return CreateStudentSessionSerializer
+        return super().get_serializer_class()
+
+    def get_queryset(self, **kwargs):
+        return Session.objects.filter(
+            
+            ).order_by('-created')
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save()
+        return Response(
+            {'status': 'success', 'data': StudentSessionSerializer(instance).data},
+            status=status.HTTP_201_CREATED
+        )
+
+
+class AdminSessionView(GenericAPIView):
+    allowed_methods = ('GET','PATCH', 'DELETE')
+    #authentication_classes = (AdminAuthentication,)
+    serializer_class = StudentSessionSerializer  
+
+    def get_serializer_class(self):
+        if self.request.method == 'PATCH':
+            return CreateStudentSessionSerializer
+        return super().get_serializer_class()
+
+    def delete(self, request, *args, **kwargs):
+        try:
+            class_ = Session.objects.get(
+                identifier=kwargs['class']
+            )
+        except Session.DoesNotExist:
+            raise exceptions.NotFound()
+
+        serializer = self.get_serializer(class_)
+        instance = serializer.delete()
+        return Response({'status': 'success'})
+
+    def get(self, request, *args, **kwargs):
+        try:
+            session = Session.objects.get(
+                identifier=kwargs['session']
+            )
+        except Session.DoesNotExist:
+            raise exceptions.NotFound()
+
+        serializer = self.get_serializer(class_)
+        return Response({'status': 'success', 'data': serializer.data})
+
+    def patch(self, request, *args, **kwargs):
+        try:
+            class_ = Session.objects.get(
+                identifier=kwargs['class'],
+            )
+        except Session.DoesNotExist:
+            raise exceptions.NotFound()
+
+        serializer = self.get_serializer(
+            class_, 
+            data=request.data,
+            partial=True)
+
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save()
+        return Response(
+            {'status': 'success',
+             'data': StudentSessionSerializer(instance).data}
         )
 
 

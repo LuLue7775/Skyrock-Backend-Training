@@ -17,6 +17,8 @@ urlpatterns = (
     url(r'^user/$', views.UserView.as_view(), name='user-view'),
     url(r'^user/client/(?P<id>([a-zA-Z0-9\_\-]+))/$', views.UserClientView.as_view(), name='user-client-view'),
     url(r'^user/student/(?P<id>([a-zA-Z0-9\_\-]+))/$', views.UserStudentView.as_view(), name='user-student-view'),
+    url(r'^user/booking/$', views.CreateUserBookingView.as_view(), name='user-booking-view'),
+    url(r'^user/booking/(?P<booking>([a-zA-Z0-9\_\-]+))/$', views.UserBookingView.as_view(), name='user-node-view'),
 
 
     url(r'^admin/auth/register/$', views.RegisterView.as_view(), name='admin-register'),
@@ -32,6 +34,9 @@ urlpatterns = (
     url(r'^admin/badge/$', views.AdminBadgeCreateView.as_view(), name='user-badge-view'),
     url(r'^admin/badge/(?P<id>([a-zA-Z0-9\_\-]+))/$', views.AdminBadgeView.as_view(), name='user-badge-view'),
     
+    url(r'^admin/session/$', views.CreateAdminSessionView.as_view(), name='admin-session-list'),
+    url(r'^admin/session/(?P<class>([a-zA-Z0-9\_\-]+))/$', views.AdminSessionView.as_view(), name='admin-session-view'),
+
     url(r'^admin/booking/$', views.CreateAdminBookingView.as_view(), name='admin-booking-view'),
     url(r'^admin/booking/(?P<booking>([a-zA-Z0-9\_\-]+))/$', views.AdminBookingView.as_view(), name='user-node-view'),
 
