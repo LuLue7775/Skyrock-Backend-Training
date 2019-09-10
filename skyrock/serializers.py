@@ -505,9 +505,8 @@ class StudentSessionSerializer(serializers.ModelSerializer):
     teacher = serializers.CharField()
 
     class Meta:
-        model = Booking
+        model = Session
         fields = (
-            'identifier',
             'location',
             'date',
             'club',
