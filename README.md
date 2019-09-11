@@ -1,1 +1,0 @@
-# Skyrock-Backend-Training
