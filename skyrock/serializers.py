@@ -536,25 +536,7 @@ class CreateStudentSessionSerializer(serializers.ModelSerializer):
 
     def validate(self, validated_data):
 
-        # try:
-        #     club = Club.objects.get(
-        #         identifier=validated_data['club']
-        #     )
-        #     validated_data['club'] = club
-
-        # except Club.DoesNotExist:
-        #     raise exceptions.NotFound()
-
-        
-        # try:
-        #     user = User.objects.get(
-        #         identifier=validated_data['club']
-        #     )
-        #     validated_data['club'] = club
-
-        # except Club.DoesNotExist:
-        #     raise exceptions.NotFound()
-
+       
 
 
         return validated_data
