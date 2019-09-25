@@ -50,7 +50,11 @@ urlpatterns = (
 
     url(r'^admin/client/$', views.AdminClientCreateView.as_view(), name='admin-parent-view'),
     url(r'^admin/client/(?P<id>([a-zA-Z0-9\_\-]+))/$', views.AdminClientView.as_view(), name='user-node-view'),
-    
+    url(r'^admin/client/(?P<id>([a-zA-Z0-9\_\-]+))/note/$', views.CreateClientNoteView.as_view(), name='create-client-note-view'),
+    url(r'^admin/client/(?P<id>([a-zA-Z0-9\_\-]+))/note/(?P<note_id>([a-zA-Z0-9\_\-]+))/$', views.ClientNoteView.as_view(), name='client-note-view'),
+
+
+  
 )
 
 urlpatterns = format_suffix_patterns(urlpatterns)
