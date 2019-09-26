@@ -39,6 +39,8 @@ urlpatterns = (
 
     url(r'^admin/booking/$', views.CreateAdminBookingView.as_view(), name='admin-booking-view'),
     url(r'^admin/booking/(?P<booking>([a-zA-Z0-9\_\-]+))/$', views.AdminBookingView.as_view(), name='user-node-view'),
+    url(r'^admin/booking/(?P<booking>([a-zA-Z0-9\_\-]+))/note/$', views.CreateBookingNoteView.as_view(), name='create-booking-note-view'),
+    url(r'^admin/booking/(?P<booking>([a-zA-Z0-9\_\-]+))/note/(?P<note_id>([a-zA-Z0-9\_\-]+))/$', views.BookingNoteView.as_view(), name='booking-note-view'),
 
     url(r'^admin/student/$', views.AdminStudentCreateView.as_view(), name='admin-students-view'),
     url(r'^admin/student/(?P<id>([a-zA-Z0-9\_\-]+))/$', views.AdminStudentView.as_view(), name='admin-student-view'),
@@ -50,7 +52,11 @@ urlpatterns = (
 
     url(r'^admin/client/$', views.AdminClientCreateView.as_view(), name='admin-parent-view'),
     url(r'^admin/client/(?P<id>([a-zA-Z0-9\_\-]+))/$', views.AdminClientView.as_view(), name='user-node-view'),
-    
+    url(r'^admin/client/(?P<id>([a-zA-Z0-9\_\-]+))/note/$', views.CreateClientNoteView.as_view(), name='create-client-note-view'),
+    url(r'^admin/client/(?P<id>([a-zA-Z0-9\_\-]+))/note/(?P<note_id>([a-zA-Z0-9\_\-]+))/$', views.ClientNoteView.as_view(), name='client-note-view'),
+
+
+  
 )
 
 urlpatterns = format_suffix_patterns(urlpatterns)
