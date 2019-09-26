@@ -436,6 +436,82 @@ class CreateClientSerializer(ClientSerializer):
 
         return client
 
+class ClientNoteSerializer(serializers.ModelSerializer):
+    note = serializers.CharField()
+    assignee = serializers.CharField()
+    resolve = serializers.BooleanField()
+    user = serializers.CharField()
+    client = ClientShortSerializer()
+
+    class Meta:
+        model = ClientNote
+        fields = (
+            'identifier',
+            'note',
+            'assignee',
+            'resolve',
+            'user',
+            'client',
+        )
+
+    def delete(self):
+        self.instance.delete()
+
+
+class CreateClientNoteSerializer(ClientNoteSerializer):
+    note = serializers.CharField()
+    assignee = serializers.CharField()
+    resolve = serializers.BooleanField()
+    client = serializers.CharField()
+
+    class Meta:
+        model = ClientNoteSerializer.Meta.model
+        fields = (
+            'identifier',
+            'note',
+            'assignee',
+            'resolve',
+            'client'
+        )
+
+    def validate(self, validated_data):
+        validated_data['user'] = self.context['request'].user
+        return validated_data
+
+    def create(self, validated_data):
+        # print(validated_data)
+        try:
+            client = Client.objects.get(
+                identifier = validated_data['client']
+            )
+        except Client.DoesNotExist:
+            raise exceptions.NotFound()
+
+        clientnote  = ClientNote.objects.create(
+                note = validated_data['note'],
+                assignee = validated_data['assignee'],
+                resolve = validated_data['resolve'],
+                user = validated_data['user'],
+                client = client,
+                )
+        # try:
+        # from django.core.mail import send_mail
+        # from django.contrib.sites.shortcuts import get_current_site
+
+        # current_site = get_current_site(self.request)
+        # url = None
+        # context = {"current_site": current_site,
+        #                "user": client,
+        #                "password_reset_url": url,
+        #                "request": self.request}
+
+        # get_adapter(self.request).send_mail('account/email/email_confirm_message',client.email,context)
+        # except Exception as exc: 
+        #     raise exceptions.ValidationError({'non_field_errors':
+        #         ['Error sending the verification email.']})
+
+        return clientnote
+    
 
 class StudentAttendanceSerializer(serializers.ModelSerializer):
     student = ShortStudentSerializer()
@@ -497,6 +573,76 @@ class CreateStudentAttendanceSerializer(StudentAttendanceSerializer):
             **validated_data
         )
 
+# class TeachingRecordSerializer(serializers.ModelSerializer):
+#     note = serializers.CharField()
+#     assignee = serializers.CharField()
+#     resolve = serializers.BooleanField()
+#     user = serializers.ForeignField()
+#     client = ClientShortSerializer()
+
+#     class Meta:
+#         model = ClientNote
+#         fields = (
+#             'identifier',
+#             'note',
+#             'assignee',
+#             'resolve',
+#             'user',
+#             'client',
+#         )
+
+#     def delete(self):
+#         self.instance.delete()
+
+
+# class CreateTeachingRecordSerializer(ClientNoteSerializer):
+#     note = serializers.CharField()
+#     assignee = serializers.CharField()
+#     resolve = serializers.BooleanField()
+#     user = serializers.ForeignField()
+#     client = ClientShortSerializer()
+
+#     class Meta:
+#         model = ClientNoteSerializer.Meta.model
+#         fields = (
+#             'identifier',
+#             'note',
+#             'assignee',
+#             'resolve',
+#             'user',
+#             'client',
+#         )
+
+#     def validate(self, validated_data):
+#         validated_data['user'] = self.context['request'].user
+#         return validated_data
+
+#     def create(self, validated_data):
+
+#         clientnote  = ClientNote.objects.create(
+#                 note = validated_data['note'],
+#                 assignee = validated_data['assignee'],
+#                 resolve = validated_data['resolve'],
+#                 user = validated_data['user'],
+#                 client = validated_data['client'],
+#                 )
+#         # try:
+#         # from django.core.mail import send_mail
+#         # from django.contrib.sites.shortcuts import get_current_site
+
+#         # current_site = get_current_site(self.request)
+#         # url = None
+#         # context = {"current_site": current_site,
+#         #                "user": client,
+#         #                "password_reset_url": url,
+#         #                "request": self.request}
+
+#         # get_adapter(self.request).send_mail('account/email/email_confirm_message',client.email,context)
+#         # except Exception as exc: 
+#         #     raise exceptions.ValidationError({'non_field_errors':
+#         #         ['Error sending the verification email.']})
+
+#         return clientnote
 
 class StudentSessionSerializer(serializers.ModelSerializer):
     location = serializers.CharField()
@@ -626,6 +772,76 @@ class CreateStudentBookingSerializer(serializers.ModelSerializer):
                 )
         return booking
 
+# class BookingNoteSerializer(serializers.ModelSerializer):
+#     note = serializers.CharField()
+#     assignee = serializers.CharField()
+#     resolve = serializers.BooleanField()
+#     user = serializers.ForeignField()
+#     client = ClientShortSerializer()
+
+#     class Meta:
+#         model = ClientNote
+#         fields = (
+#             'identifier',
+#             'note',
+#             'assignee',
+#             'resolve',
+#             'user',
+#             'client',
+#         )
+
+#     def delete(self):
+#         self.instance.delete()
+
+
+# class CreateBookingNoteSerializer(ClientNoteSerializer):
+#     note = serializers.CharField()
+#     assignee = serializers.CharField()
+#     resolve = serializers.BooleanField()
+#     user = serializers.ForeignField()
+#     client = ClientShortSerializer()
+
+#     class Meta:
+#         model = ClientNoteSerializer.Meta.model
+#         fields = (
+#             'identifier',
+#             'note',
+#             'assignee',
+#             'resolve',
+#             'user',
+#             'client',
+#         )
+
+#     def validate(self, validated_data):
+#         validated_data['user'] = self.context['request'].user
+#         return validated_data
+
+#     def create(self, validated_data):
+
+#         clientnote  = ClientNote.objects.create(
+#                 note = validated_data['note'],
+#                 assignee = validated_data['assignee'],
+#                 resolve = validated_data['resolve'],
+#                 user = validated_data['user'],
+#                 client = validated_data['client'],
+#                 )
+#         # try:
+#         # from django.core.mail import send_mail
+#         # from django.contrib.sites.shortcuts import get_current_site
+
+#         # current_site = get_current_site(self.request)
+#         # url = None
+#         # context = {"current_site": current_site,
+#         #                "user": client,
+#         #                "password_reset_url": url,
+#         #                "request": self.request}
+
+#         # get_adapter(self.request).send_mail('account/email/email_confirm_message',client.email,context)
+#         # except Exception as exc: 
+#         #     raise exceptions.ValidationError({'non_field_errors':
+#         #         ['Error sending the verification email.']})
+
+#         return clientnote
 
 class UserSerializer(DateSerializer):
     role = serializers.ChoiceField(
