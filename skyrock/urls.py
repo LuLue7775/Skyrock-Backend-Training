@@ -39,6 +39,8 @@ urlpatterns = (
 
     url(r'^admin/booking/$', views.CreateAdminBookingView.as_view(), name='admin-booking-view'),
     url(r'^admin/booking/(?P<booking>([a-zA-Z0-9\_\-]+))/$', views.AdminBookingView.as_view(), name='user-node-view'),
+    url(r'^admin/booking/(?P<booking>([a-zA-Z0-9\_\-]+))/note/$', views.CreateBookingNoteView.as_view(), name='create-booking-note-view'),
+    url(r'^admin/booking/(?P<booking>([a-zA-Z0-9\_\-]+))/note/(?P<note_id>([a-zA-Z0-9\_\-]+))/$', views.BookingNoteView.as_view(), name='booking-note-view'),
 
     url(r'^admin/student/$', views.AdminStudentCreateView.as_view(), name='admin-students-view'),
     url(r'^admin/student/(?P<id>([a-zA-Z0-9\_\-]+))/$', views.AdminStudentView.as_view(), name='admin-student-view'),

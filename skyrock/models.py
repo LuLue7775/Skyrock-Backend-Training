@@ -145,21 +145,6 @@ class ClientNote(DateModel):
     user = models.ForeignKey('skyrock.User')
     client =  models.ForeignKey('skyrock.Client', on_delete = models.CASCADE, related_name="note")
 
-# class BookingNote(DateModel):
-#     identifier =  models.UUIDField(unique=True, db_index=True,
-#         default=uuid.uuid4)
-#     note = models.CharField(max_length=1000, db_index=True, blank=True)
-#     assignee = models.CharField(max_length=50, db_index=True, blank=True)
-#     resolve = models.BooleanField(default=False)
-#     user = models.ForeignKey('skyrock.User')
-#     client =  models.ForeignKey('skyrock.Client')
-#     date =  models.DateTimeField(default=now)
-#     club = models.ForeignKey('skyrock.Club', blank=True)
-#     location = EnumField(
-#                 Location, 
-#                 max_length=50,
-#                 default=Location.NONE)
-#     teacher = models.CharField(max_length=50, db_index=True, blank=True)
 
 class Attendance(DateModel):
     identifier = models.UUIDField(unique=True, db_index=True,
@@ -172,17 +157,17 @@ class Attendance(DateModel):
                 default=Attendance_status.PRESENT)
     date =  models.DateTimeField(default=now)
 
-# class TeachingRecord(DateModel):
-#     identifier = models.UUIDField(unique=True, db_index=True,
-#         default=uuid.uuid4)
-#     student = models.ForeignKey('skyrock.Student')
-#     club = models.CharField(max_length=50, db_index=True, blank=True)
-#     status = EnumField(
-#                 Attendance_status, 
-#                 max_length=50,
-#                 default=Attendance_status.PRESENT)
-#     date =  models.DateTimeField(default=now)
-#     note = models.CharField(max_length=1000, db_index=True, blank=True)
+class TeachingRecord(DateModel):
+    identifier = models.UUIDField(unique=True, db_index=True,
+        default=uuid.uuid4)
+    student = models.ForeignKey('skyrock.Student')
+    club = models.CharField(max_length=50, db_index=True, blank=True)
+    status = EnumField(
+                Attendance_status, 
+                max_length=50,
+                default=Attendance_status.PRESENT)
+    date =  models.DateTimeField(default=now)
+    note = models.CharField(max_length=1000, db_index=True, blank=True)
 
 
 class Program(DateModel):
@@ -229,7 +214,31 @@ class Booking(DateModel):
     session = models.ForeignKey('skyrock.Session', blank=True, null=True)
     attendance = models.BooleanField(default=True, blank=True)
 
+class BookingNote(DateModel):
+    identifier = models.UUIDField(unique=True, db_index=True,
+        default=uuid.uuid4)
+    student = models.ForeignKey('skyrock.Student',on_delete = models.CASCADE, related_name="note")
+    client = models.ForeignKey('skyrock.Client',blank=True, null=True)
+    session = models.ForeignKey('skyrock.Session', blank=True, null=True)
+    attendance = models.BooleanField(default=True, blank=True)
+    note = models.CharField(max_length=200, blank=True)
 
+# class BookingNote(DateModel):
+#     identifier =  models.UUIDField(unique=True, db_index=True,
+#         default=uuid.uuid4)
+#     note = models.CharField(max_length=1000, db_index=True, blank=True)
+#     assignee = models.CharField(max_length=50, db_index=True, blank=True)
+#     resolve = models.BooleanField(default=False)
+#     user = models.ForeignKey('skyrock.User')
+#     client =  models.ForeignKey('skyrock.Client', on_delete = models.CASCADE, related_name="note"))
+#     student = models.ForeignKey('skyrock.Student')
+#     teacher = models.CharField(max_length=50, db_index=True, blank=True)
+#     date =  models.DateTimeField(default=now)
+#     club = models.ForeignKey('skyrock.Club', blank=True)
+#     location = EnumField(
+#                 Location, 
+#                 max_length=50,
+#                 default=Location.NONE)
 class Badge(DateModel):
     identifier = models.UUIDField(unique=True, db_index=True,
         default=uuid.uuid4)

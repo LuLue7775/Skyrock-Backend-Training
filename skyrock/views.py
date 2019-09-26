@@ -858,78 +858,79 @@ class AdminBookingView(GenericAPIView):
              'data': StudentBookingSerializer(instance).data}
         )
 
-# class BookingNoteView(GenericAPIView):
-#     allowed_methods = ('GET','PATCH', 'DELETE')
-#     # authentication_classes = (AdminAuthentication,)
-#     serializer_class = BookingNoteSerializer  
+class BookingNoteView(GenericAPIView):
+    allowed_methods = ('GET','PATCH', 'DELETE')
+    # authentication_classes = (AdminAuthentication,)
+    serializer_class = BookingNoteSerializer  
 
-#     def delete(self, request, *args, **kwargs):
-#         try:
-#             bookingnote = BookingNote.objects.get(
-#                 identifier=kwargs['id']
-#             )
-#         except BookingNote.DoesNotExist:
-#             raise exceptions.NotFound()
+    def delete(self, request, *args, **kwargs):
+        try:
+            bookingnote = BookingNote.objects.get(
+                identifier=kwargs['id']
+            )
+        except BookingNote.DoesNotExist:
+            raise exceptions.NotFound()
 
-#         serializer = self.get_serializer(bookingnote)
-#         instance = serializer.delete()
-#         return Response({'status': 'success'})
+        serializer = self.get_serializer(bookingnote)
+        instance = serializer.delete()
+        return Response({'status': 'success'})
 
-#     def get(self, request, *args, **kwargs):
-#         try:
-#             bookingnote = BookingNote.objects.get(
-#                 identifier=str(kwargs['id']),
-#             )
-#         except BookingNote.DoesNotExist:
-#             raise exceptions.NotFound()
+    def get(self, request, *args, **kwargs):
+        try:
+            bookingnote = BookingNote.objects.get(
+                identifier=str(kwargs['id']),
+            )
+        except BookingNote.DoesNotExist:
+            raise exceptions.NotFound()
 
-#         serializer = self.get_serializer(bookingnote)
-#         return Response({'status': 'success', 'data': serializer.data })
+        serializer = self.get_serializer(bookingnote)
+        return Response({'status': 'success', 'data': serializer.data })
 
-#     def patch(self, request, *args, **kwargs):
-#         try:
-#             bookingnote = BookingNote.objects.get(
-#                 identifier=kwargs['id'],
-#             )
-#         except BookingNote.DoesNotExist:
-#             raise exceptions.NotFound()
+    def patch(self, request, *args, **kwargs):
+        try:
+            bookingnote = BookingNote.objects.get(
+                identifier=kwargs['id'],
+            )
+        except BookingNote.DoesNotExist:
+            raise exceptions.NotFound()
 
-#         serializer = self.get_serializer(
-#             bookingnote, 
-#             data=request.data,
-#             partial=True)
-#         serializer.is_valid(raise_exception=True)
-#         instance = serializer.save()
-#         return Response(
-#             {'status': 'success',
-#              'data': BookingNoteSerializer(instance).data}
-#         )
+        serializer = self.get_serializer(
+            bookingnote, 
+            data=request.data,
+            partial=True)
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save()
+        return Response(
+            {'status': 'success',
+             'data': BookingNoteSerializer(instance).data}
+        )
 
-# class CreateBookingNoteView(ListAPIView):
-#     allowed_methods = ('GET','POST')
-#     #authentication_classes = (AdminAuthentication,)
-#     serializer_class = CreateBookingNoteSerializer
-#     # pagination_class = ResultsSetPagination
+class CreateBookingNoteView(ListAPIView):
+    allowed_methods = ('GET','POST')
+    #authentication_classes = (AdminAuthentication,)
+    serializer_class = BookingNoteSerializer
+    # pagination_class = ResultsSetPagination
    
 
-#     def get_serializer_class(self):
-#         if self.request.method == 'POST':
-#             return CreateBookingNoteSerializer
-#         return super().get_serializer_class()
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return CreateBookingNoteSerializer
+        return super().get_serializer_class()
 
-#     def get_queryset(self, **kwargs):
-#         return CreateBookingNotes.objects.filter(
+    def get_queryset(self, **kwargs):
+        return CreateBookingNotes.objects.filter(
             
-#             ).order_by('-created')
+            ).order_by('-created')
 
-#     def post(self, request, *args, **kwargs):
-#         serializer = self.get_serializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         instance = serializer.save()
-#         return Response(
-#             {'status': 'success', 'data': CreateBookingNoteSerializer(instance).data},
-#             status=status.HTTP_201_CREATED
-#         )
+    def post(self, request, *args, **kwargs):
+        request.data['booking'] = kwarg['id']
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save()
+        return Response(
+            {'status': 'success', 'data': BookingNoteSerializer(instance).data},
+            status=status.HTTP_201_CREATED
+        )
 
 
 class CreateUserBookingView(ListAPIView):
