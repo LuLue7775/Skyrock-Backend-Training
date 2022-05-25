@@ -41,7 +41,7 @@ oauthlib==2.1.0
 phonenumbers==8.8.5
 psycopg2==2.7.3.2
 pycparser==2.18
-PyJWT==1.6.4
+PyJWT==2.4.0
 pyOpenSSL==18.0.0
 python-dateutil==2.7.3
 python-social-auth==0.3.6
